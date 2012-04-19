@@ -1,0 +1,9 @@
+ForbidHostsv6 is a tool that has been designed to run with DenyHosts on IPv6 enabled systems. While DenyHosts will catch IPv4 connections on SSH, ForbidHostsv6 only focuses on IPv6 connections.
+
+Its behaviour is simple. Once too many connections attempts have been detected, it simply adds the IP in /etc/hosts.deny and mails root.
+
+ForbidHostsv6 does not take any argument. Run it, it will fork in background. Kill it with signals.
+
+This has been specifically designed for the ReactOS Foundation infrastructure, but we are open to suggestions and patches :-).
+
+-- Pierre Schweitzer <pierre@reactos.org>
