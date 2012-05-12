@@ -19,6 +19,10 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#ifdef WITH_INOTIFY
+#include <sys/inotify.h>
+#include <poll.h>
+#endif
 #include <fcntl.h>
 #include <netdb.h>
 #include <syslog.h>
@@ -37,6 +41,7 @@
 const unsigned int MaxAttempts    = 5;
 const unsigned int HostExpire     = 5;
 const unsigned int FailurePenalty = 1;
+const char * AuthLogFile          = "/var/log/auth.log";
 const char * MailCommand          = "/usr/bin/mailx -s 'ForbidHostsv6 Report' "
                                     "root";
 struct HostIPv6 {
@@ -263,7 +268,7 @@ int main(int argc, char ** argv) {
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
 
-    int AuthLog = open("/var/log/auth.log", O_RDONLY | O_NONBLOCK);
+    int AuthLog = open(AuthLogFile, O_RDONLY | O_NONBLOCK);
     if (AuthLog < 0) {
         exit(EXIT_FAILURE);
     }
@@ -271,7 +276,48 @@ int main(int argc, char ** argv) {
     // Only take care of new entries
     lseek(AuthLog, 0, SEEK_END);
 
+#ifdef WITH_INOTIFY
+    int iNotify = inotify_init1(IN_NONBLOCK);
+    if (iNotify < 0) {
+        close(AuthLog);
+        exit(EXIT_FAILURE);
+    }
+
+    int iAuth = inotify_add_watch(iNotify, AuthLogFile, IN_MODIFY);
+    if (iAuth < 0) {
+        close(iNotify);
+        close(AuthLog);
+        exit(EXIT_FAILURE);
+    }
+#endif
+
     for (;;) {
+#ifdef WITH_INOTIFY
+        struct pollfd FDs[] = {
+            {iNotify, POLLIN, 0},
+        };
+
+        int Timeout = -1;
+        // Set the poll timeout to the first
+        // expired host to purge
+        if (!Hosts.empty()) {
+            Timeout = Hosts.back().Expire - time(0) * 1000;
+        }
+
+        int Event = poll(FDs, 1, Timeout);
+        if (Event < 0) {
+            break;
+        } else if (Event > 0) {
+            struct inotify_event iEvent;
+
+            // Read the pending event
+            // It will concern iAuth
+            unused_return(read(iNotify, &iEvent, sizeof(struct inotify_event)));
+        }
+
+        // Whatever happens, fall through
+        // We have at least hosts to purge
+#endif
         ReadLine(AuthLog, Hosts);
 
         // Purge queue of expired hosts
@@ -283,9 +329,15 @@ int main(int argc, char ** argv) {
             Hosts.pop_back();
         }
 
+#ifndef WITH_INOTIFY
         usleep(1000);
+#endif
     }
 
+#ifdef WITH_INOTIFY
+    close(iAuth);
+    close(iNotify);
+#endif
     close(AuthLog);
     exit(EXIT_SUCCESS);
 }
