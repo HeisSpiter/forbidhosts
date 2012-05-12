@@ -31,12 +31,14 @@
 #include <cstdio>
 #include <csignal>
 
+#define unreferenced_parameter(p) (void)p
+#define unused_return(f) if (f) {}
+
 const unsigned int MaxAttempts    = 5;
 const unsigned int HostExpire     = 5;
 const unsigned int FailurePenalty = 1;
 const char * MailCommand          = "/usr/bin/mailx -s 'ForbidHostsv6 Report' "
                                     "root";
-
 struct HostIPv6 {
     time_t       FirstSeen;
     std::string  Address;
@@ -58,12 +60,13 @@ struct Closer {
 };
 
 static void SignalHandler(int Signal) {
+    unreferenced_parameter(Signal);
     syslog(LOG_WARNING, "Deamon shutting down.");
     exit(EXIT_SUCCESS);
 }
 
-static bool IsValidLine(char * Line, unsigned int Length,
-                        char ** Address, unsigned int * AddressLength) {
+static bool IsValidLine(char * Line, char ** Address,
+                        unsigned int * AddressLength) {
     char * SSHd;
     char * Method;
     char * User;
@@ -135,7 +138,7 @@ static void AddToDeny(std::string Host) {
 
     // Write the new entry
     std::string Entry = "sshd: [" + Host + "]\n";
-    write(Deny, Entry.c_str(), Entry.length());
+    unused_return(write(Deny, Entry.c_str(), Entry.length()));
 
     close(Deny);
     sync();
@@ -201,7 +204,7 @@ static void ReadLine(int File, std::vector<HostIPv6> & Hosts) {
     }
 
     // Check line is valid
-    if (!IsValidLine(Line, Length, &Address, &AddressLength)) {
+    if (!IsValidLine(Line, &Address, &AddressLength)) {
         return;
     }
 
@@ -221,6 +224,9 @@ static void ReadLine(int File, std::vector<HostIPv6> & Hosts) {
 
 int main(int argc, char ** argv) {
     std::vector<HostIPv6> Hosts;
+
+    unreferenced_parameter(argc);
+    unreferenced_parameter(argv);
 
     // Install signals handler
     signal(SIGTERM, SignalHandler);
