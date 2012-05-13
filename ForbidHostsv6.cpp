@@ -39,6 +39,8 @@
 
 #define unreferenced_parameter(p) (void)p
 #define unused_return(f) if (f) {}
+#define soft_assert(e) if (!(e)) Assert(__FILE__, __LINE__, #e)
+#define hard_assert(e) if (!(e)) Assert(__FILE__, __LINE__, #e, true)
 
 const unsigned int MaxAttempts    = 5;
 const unsigned int HostExpire     = 5;
@@ -66,9 +68,19 @@ struct Closer {
     }
 };
 
+static void Assert(const char * File, unsigned int Line, const char * Assert, bool Critical = false) {
+    syslog((Critical ? LOG_CRIT : LOG_NOTICE),
+           "Assertion '%s' failed at line %d in file %s", Assert, Line, File);
+
+    if (Critical) {
+        syslog(LOG_INFO, "Deamon shutting down.");
+        exit(EXIT_FAILURE);
+    }
+}
+
 static void SignalHandler(int Signal) {
     unreferenced_parameter(Signal);
-    syslog(LOG_WARNING, "Deamon shutting down.");
+    syslog(LOG_INFO, "Deamon shutting down.");
     exit(EXIT_SUCCESS);
 }
 
@@ -173,7 +185,7 @@ static void AddToDeny(std::string Host) {
 
     // Write the new entry
     std::string Entry = "sshd: [" + Host + "]\n";
-    unused_return(write(Deny, Entry.c_str(), Entry.length()));
+    soft_assert(write(Deny, Entry.c_str(), Entry.length()) == (ssize_t)Entry.length());
 
     close(Deny);
     sync();
@@ -207,6 +219,8 @@ static bool UpdateHost(const std::string & Host,
                        unsigned int Repeated) {
     bool InsertRequired = true;
 
+    soft_assert(!Host.empty());
+
     for (std::vector<HostIPv6>::iterator it = Hosts.begin();
          it != Hosts.end(); ++it) {
         if ((*it).Address.compare(Host) == 0) {
@@ -227,6 +241,8 @@ static bool UpdateHost(const std::string & Host,
             break;
         }
     }
+
+    soft_assert((InsertRequired && Repeated == 1) || !InsertRequired);
 
     return InsertRequired;
 }
@@ -308,7 +324,7 @@ int main(int argc, char ** argv) {
     signal(SIGQUIT, SignalHandler);
 
     syslog(LOG_INFO, "Daemon starting up");
-    setlogmask(LOG_UPTO(LOG_INFO));
+    setlogmask(LOG_MASK(LOG_INFO) | LOG_MASK(LOG_CRIT) | LOG_MASK(LOG_NOTICE));
     openlog("ForbidHostsv6", LOG_CONS, LOG_USER);
 
     // Start deamon
@@ -381,7 +397,7 @@ int main(int argc, char ** argv) {
 
             // Read the pending event
             // It will concern iAuth
-            unused_return(read(iNotify, &iEvent, sizeof(struct inotify_event)));
+            soft_assert(read(iNotify, &iEvent, sizeof(struct inotify_event)) == sizeof(struct inotify_event));
         }
 
         // Whatever happens, fall through
