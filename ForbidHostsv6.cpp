@@ -1,6 +1,6 @@
 /*
 * ForbidHostsv6 - A tool for checking IPv6 SSH failed connections
-* Copyright (C) 2012 Pierre Schweitzer <pierre@reactos.org
+* Copyright (C) 2012 Pierre Schweitzer <pierre@reactos.org>
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,12 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "ForbidHostsv6.h"
+
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#ifdef WITH_INOTIFY
+#ifndef WITHOUT_INOTIFY
 #include <sys/inotify.h>
 #include <poll.h>
 #endif
@@ -148,6 +150,7 @@ static void AddToDeny(std::string Host) {
     close(Deny);
     sync();
 
+#ifndef WITHOUT_EMAIL
     // Look up the IP address
     struct sockaddr_in6 SockAddr;
     inet_pton(AF_INET6, Host.c_str(), &(SockAddr.sin6_addr));
@@ -165,6 +168,7 @@ static void AddToDeny(std::string Host) {
                         "-------------------------", Host.c_str(), Name);
         pclose(Mailer);
     }
+#endif
 
     // We are done here
     exit(EXIT_SUCCESS);
@@ -276,7 +280,7 @@ int main(int argc, char ** argv) {
     // Only take care of new entries
     lseek(AuthLog, 0, SEEK_END);
 
-#ifdef WITH_INOTIFY
+#ifndef WITHOUT_INOTIFY
     int iNotify = inotify_init1(IN_NONBLOCK);
     if (iNotify < 0) {
         close(AuthLog);
@@ -292,7 +296,7 @@ int main(int argc, char ** argv) {
 #endif
 
     for (;;) {
-#ifdef WITH_INOTIFY
+#ifndef WITHOUT_INOTIFY
         struct pollfd FDs[] = {
             {iNotify, POLLIN, 0},
         };
@@ -329,12 +333,12 @@ int main(int argc, char ** argv) {
             Hosts.pop_back();
         }
 
-#ifndef WITH_INOTIFY
+#ifndef WITHOUT_INOTIFY
         usleep(1000);
 #endif
     }
 
-#ifdef WITH_INOTIFY
+#ifndef WITHOUT_INOTIFY
     close(iAuth);
     close(iNotify);
 #endif

@@ -1,0 +1,7 @@
+bin_PROGRAMS = ForbidHostsv6
+
+AM_CXXFLAGS = $(INTI_CFLAGS)
+
+ForbidHostsv6_SOURCES = ForbidHostsv6.cpp
+ForbidHostsv6_LDADD = $(INTI_LIBS)
+ForbidHostsv6_CPPFLAGS=-Werror -W -Wall -Wextra -ansi -pedantic
