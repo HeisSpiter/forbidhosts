@@ -88,7 +88,7 @@ static bool IsValidLine(char * Line, char ** Address,
     }
 
     // That the auth failed
-    Method = strstr(Line, ": Failed ");
+    Method = strstr(SSHd, ": Failed ");
     if (Method == 0) {
         return false;
     }
@@ -128,6 +128,34 @@ static bool IsValidLine(char * Line, char ** Address,
     *AddressLength = (End - Host);
 
     return true;
+}
+
+static unsigned int IsLastRepeated(char * Line) {
+    char * SSHd;
+    char * Times;
+    char * End;
+
+    // Ensure we are dealing with SSH
+    SSHd = strstr(Line, " sshd[");
+    if (SSHd == 0) {
+        return 0;
+    }
+
+    // That the message was repeated
+    Times = strstr(SSHd, ": last message repeated ");
+    if (Times == 0) {
+        return 0;
+    }
+    // We want the exact number
+    Times += sizeof(": last message repeated ") - sizeof('\0');
+
+    // Ensure the complete line is correct
+    End = strstr(Times, " times");
+    if (End == 0) {
+        return 0;
+    }
+
+    return strtoul(Times, 0, 10);
 }
 
 static void AddToDeny(std::string Host) {
@@ -175,7 +203,8 @@ static void AddToDeny(std::string Host) {
 }
 
 static bool UpdateHost(const std::string & Host,
-                       std::vector<HostIPv6> & Hosts) {
+                       std::vector<HostIPv6> & Hosts,
+                       unsigned int Repeated) {
     bool InsertRequired = true;
 
     for (std::vector<HostIPv6>::iterator it = Hosts.begin();
@@ -183,14 +212,15 @@ static bool UpdateHost(const std::string & Host,
         if ((*it).Address.compare(Host) == 0) {
             InsertRequired = false;
 
-            if ((*it).Attempts >= MaxAttempts - 1) {
+            (*it).Attempts += Repeated;
+
+            if ((*it).Attempts >= MaxAttempts) {
                 // Max attempts
                 // Add to hosts.deny
                 AddToDeny((*it).Address);
                 Hosts.erase(it);
             } else {
-                // Update attempts count
-                ++((*it).Attempts);
+                // Update expire
                 (*it).Expire += (FailurePenalty * 60);
             }
 
@@ -205,30 +235,65 @@ static void ReadLine(int File, std::vector<HostIPv6> & Hosts) {
     char Line[255];
     char * Address;
     std::string Host;
-    unsigned int Length, AddressLength;
+    static std::string LastAddress = "";
+    unsigned int Length, AddressLength, Read = 0, Repeated = 1;
 
-    Length = read(File, Line, sizeof(Line));
-    if (Length < 1) {
-        return;
+    for (;;) {
+        Read = 0;
+
+        while (Read < sizeof(Line) / sizeof(char)) {
+            Length = read(File, &Line[Read], sizeof(char));
+            if (Length < 1) {
+                // If read failed while nothing was read yet
+                // there was nothing to read, break out
+                if (Read == 0) {
+                    return;
+                // Otherwise, it is the end of the file
+                } else {
+                    break;
+                }
+            }
+
+            // Ensure lines are read one by one
+            if (Line[Read] == '\n') {
+                Line[Read] = '\0';
+                break;
+            }
+
+            // Increase buffer position
+            Read++;
+        }
+
+        // Check if line is valid and if it is a repetition
+        if (!IsValidLine(Line, &Address, &AddressLength)) {
+            if (!LastAddress.empty()) {
+                Repeated = IsLastRepeated(Line);
+                if (Repeated == 0) {
+                    LastAddress = "";
+                    return;
+                }
+            } else {
+                LastAddress = "";
+                return;
+            }
+        } else {
+            // Get the host
+            Host = Address;
+            Host.erase(AddressLength);
+
+            // Save the host
+            LastAddress = Host;
+        }
+
+        if (UpdateHost(LastAddress, Hosts, Repeated)) {
+            // Insert new host
+            Hosts.push_back(HostIPv6(time(0), Host));
+        }
+
+        // In any case, resort list
+        // An item can have been added, expire modified, or an item deleted
+        sort(Hosts.begin(), Hosts.end(), Closer());
     }
-
-    // Check line is valid
-    if (!IsValidLine(Line, &Address, &AddressLength)) {
-        return;
-    }
-
-    // Get the host
-    Host = Address;
-    Host.erase(AddressLength);
-
-    if (UpdateHost(Host, Hosts)) {
-        // Insert new host
-        Hosts.push_back(HostIPv6(time(0), Host));
-    }
-
-    // In any case, resort list
-    // An item can have been added, expire modified, or an item deleted
-    sort(Hosts.begin(), Hosts.end(), Closer());
 }
 
 int main(int argc, char ** argv) {
