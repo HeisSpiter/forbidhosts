@@ -1,0 +1,13 @@
+2012-05-13  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHostsv6.cpp: Fix a bug with syslog output
+    * ForbidHostsv6.cpp: Add new functions and associated macros to have asserts that write their result to syslog.
+      Those assert can be either soft or hard, if hard the deamon quits.
+    * ForbidHostsv6.cpp: Use them instead of ignoring the return of some functions.
+
+2012-05-13  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHostsv6.cpp: Fix a bug in connections attempts count
+    * ForbidHostsv6.cpp: Fix a bug in line parsing
+    * ForbidHostsv6.cpp: Add support for the line repetitions in auth log
+    * ForbidHostsv6.cpp: Add support for reading more than one line at a time

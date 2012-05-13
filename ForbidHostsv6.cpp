@@ -68,7 +68,8 @@ struct Closer {
     }
 };
 
-static void Assert(const char * File, unsigned int Line, const char * Assert, bool Critical = false) {
+static void Assert(const char * File, unsigned int Line, const char * Assert,
+                   bool Critical = false) {
     syslog((Critical ? LOG_CRIT : LOG_NOTICE),
            "Assertion '%s' failed at line %d in file %s", Assert, Line, File);
 
@@ -185,7 +186,8 @@ static void AddToDeny(std::string Host) {
 
     // Write the new entry
     std::string Entry = "sshd: [" + Host + "]\n";
-    soft_assert(write(Deny, Entry.c_str(), Entry.length()) == (ssize_t)Entry.length());
+    soft_assert(write(Deny, Entry.c_str(), Entry.length()) ==
+                (ssize_t)Entry.length());
 
     close(Deny);
     sync();
@@ -397,7 +399,8 @@ int main(int argc, char ** argv) {
 
             // Read the pending event
             // It will concern iAuth
-            soft_assert(read(iNotify, &iEvent, sizeof(struct inotify_event)) == sizeof(struct inotify_event));
+            soft_assert(read(iNotify, &iEvent, sizeof(struct inotify_event)) ==
+                        sizeof(struct inotify_event));
         }
 
         // Whatever happens, fall through
