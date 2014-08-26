@@ -56,9 +56,8 @@ struct HostIPv6 {
     unsigned int Attempts;
     time_t       Expire;
 
-    HostIPv6(time_t Date, const std::string & AuthAddress) {
+    HostIPv6(time_t Date, const std::string & AuthAddress) : Address(AuthAddress) {
         FirstSeen = Date;
-        Address   = AuthAddress;
         Attempts  = 1;
         Expire    = Date + HostExpire * 60;
     }
@@ -280,10 +279,10 @@ static void ReadLine(int File, std::vector<HostIPv6> & Hosts) {
     char * Address;
     std::string Host;
     static std::string LastAddress = "";
-    unsigned int Length, AddressLength, Read = 0, Repeated = 1;
+    unsigned int Length, AddressLength, Repeated = 1;
 
     for (;;) {
-        Read = 0;
+        unsigned int Read = 0;
 
         while (Read < sizeof(Line) / sizeof(char)) {
             Length = read(File, &Line[Read], sizeof(char));
