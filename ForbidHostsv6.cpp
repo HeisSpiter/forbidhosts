@@ -95,6 +95,9 @@ static bool IsValidLine(char * Line, char ** Address,
     char * Host;
     char * End;
     char * Colon;
+#ifdef WITH_IPV4
+    char * Dot;
+#endif
 
     // Ensure we are dealing with SSH
     SSHd = strstr(Line, " sshd[");
@@ -130,6 +133,15 @@ static bool IsValidLine(char * Line, char ** Address,
         return false;
     }
 
+#ifdef WITH_IPV4
+    // We might have either IPv4 or IPv6 here
+    Colon = strchr(Host, ':');
+    Dot = strchr(Host, '.');
+    if ((Colon == 0 || Colon > End) &&
+        (Dot == 0 || Dot > End)) {
+        return false;
+    }
+#else
     // Finaly, ensure we have IPv6
     // Ignore any other IPs not to interfere with
     // other deamons
@@ -137,6 +149,7 @@ static bool IsValidLine(char * Line, char ** Address,
     if (Colon == 0 || Colon > End) {
         return false;
     }
+#endif
 
     // Return host
     *Address = Host;
@@ -174,6 +187,8 @@ static unsigned int IsLastRepeated(char * Line) {
 }
 
 static void AddToDeny(std::string Host) {
+    std::string Entry;
+
     pid_t Child = fork();
     if (Child == -1 || Child > 0) {
         // Parent or failure, do nothing
@@ -187,7 +202,16 @@ static void AddToDeny(std::string Host) {
     }
 
     // Write the new entry
-    std::string Entry = "sshd: [" + Host + "]\n";
+#ifdef WITH_IPV4
+    // [] are only needed for IPv6
+    if (Host.find(';') != std::string::npos) {
+        Entry = "sshd: [" + Host + "]\n";
+    } else {
+        Entry = "sshd: " + Host + "\n";
+    }
+#else
+    Entry = "sshd: [" + Host + "]\n";
+#endif
     soft_assert(write(Deny, Entry.c_str(), Entry.length()) ==
                 (ssize_t)Entry.length());
 

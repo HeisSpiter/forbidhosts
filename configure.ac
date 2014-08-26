@@ -42,6 +42,17 @@ if test $enable_email = "no" ; then
 fi
 AM_CONDITIONAL(WITHOUT_EMAIL, test $enable_email != "yes")
 
+AC_ARG_ENABLE(ipv4, [  --enable-ipv4  Enable the IPv4 support.], [],[enableval=no])
+if test "z$enableval" = zyes ; then
+    enable_ipv4="yes"
+else
+    enable_ipv4="no"
+fi
+if test $enable_ipv4 = "yes" ; then
+    AC_DEFINE([WITH_IPV4], 1, [Define if you want to enable the IPv4 support])
+fi
+AM_CONDITIONAL(WITH_IPV4, test $enable_ipv4 != "no")
+
 # Check for functions
 AC_CHECK_FUNCS([strstr strchr])
 
