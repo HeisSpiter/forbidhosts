@@ -6,4 +6,6 @@ ForbidHostsv6 does not take any argument. Run it, it will fork in background. Ki
 
 This has been specifically designed for the ReactOS Foundation infrastructure, but we are open to suggestions and patches :-).
 
+Starting on the 26-Aug-2014, support for IPv4 was added (optional though) because Ubuntu dropped DenyHosts in Ubuntu 14.04 LTS. The features for IPv4 and IPv6 are exactly the same.
+
 -- Pierre Schweitzer <pierre@reactos.org>
