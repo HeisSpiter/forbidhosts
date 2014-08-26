@@ -28,6 +28,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <syslog.h>
+#include <unistd.h>
 
 #include <string>
 #include <vector>
