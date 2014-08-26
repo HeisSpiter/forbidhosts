@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <csignal>
+#include <iostream>
 
 #define unreferenced_parameter(p) (void)p
 #define unused_return(f) if (f) {}
@@ -317,14 +318,37 @@ static void ReadLine(int File, std::vector<HostIPv6> & Hosts) {
 
 int main(int argc, char ** argv) {
     std::vector<HostIPv6> Hosts;
+    struct sigaction SigHandling;
 
     unreferenced_parameter(argc);
     unreferenced_parameter(argv);
 
+    memset(&SigHandling, 0, sizeof(struct sigaction));
+    SigHandling.sa_handler = SignalHandler;
+
     // Install signals handler
-    signal(SIGTERM, SignalHandler);
-    signal(SIGINT, SignalHandler);
-    signal(SIGQUIT, SignalHandler);
+    if (sigaction(SIGTERM, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (sigaction(SIGINT, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (sigaction(SIGQUIT, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    // Prevent zombies
+    SigHandling.sa_handler = NULL;
+    SigHandling.sa_flags = SA_NOCLDWAIT;
+    if (sigaction(SIGCHLD, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     syslog(LOG_INFO, "Daemon starting up");
     setlogmask(LOG_MASK(LOG_INFO) | LOG_MASK(LOG_CRIT) | LOG_MASK(LOG_NOTICE));
