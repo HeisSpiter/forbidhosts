@@ -48,7 +48,7 @@ const unsigned int MaxAttempts    = 5;
 const unsigned int HostExpire     = 5;
 const unsigned int FailurePenalty = 1;
 const char * AuthLogFile          = "/var/log/auth.log";
-const char * MailCommand          = "/usr/bin/mailx -s 'ForbidHostsv6 Report' "
+const char * MailCommand          = "/usr/bin/mailx -s 'ForbidHosts Report' "
                                     "root";
 struct HostIP {
     time_t       FirstSeen;
@@ -375,7 +375,7 @@ int main(int argc, char ** argv) {
 
     syslog(LOG_INFO, "Daemon starting up");
     setlogmask(LOG_MASK(LOG_INFO) | LOG_MASK(LOG_CRIT) | LOG_MASK(LOG_NOTICE));
-    openlog("ForbidHostsv6", LOG_CONS, LOG_USER);
+    openlog("ForbidHosts", LOG_CONS, LOG_USER);
 
     // Start deamon
     pid_t Deamon = fork();
