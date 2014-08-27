@@ -1,6 +1,6 @@
 /*
-* ForbidHostsv6 - A tool for checking IPv6 SSH failed connections
-* Copyright (C) 2012 Pierre Schweitzer <pierre@reactos.org>
+* ForbidHosts - A tool for checking IPv4 and IPv6 SSH failed connections
+* Copyright (C) 2012 - 2014 Pierre Schweitzer <pierre@reactos.org>
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -50,13 +50,13 @@ const unsigned int FailurePenalty = 1;
 const char * AuthLogFile          = "/var/log/auth.log";
 const char * MailCommand          = "/usr/bin/mailx -s 'ForbidHostsv6 Report' "
                                     "root";
-struct HostIPv6 {
+struct HostIP {
     time_t       FirstSeen;
     std::string  Address;
     unsigned int Attempts;
     time_t       Expire;
 
-    HostIPv6(time_t Date, const std::string & AuthAddress) : Address(AuthAddress) {
+    HostIP(time_t Date, const std::string & AuthAddress) : Address(AuthAddress) {
         FirstSeen = Date;
         Attempts  = 1;
         Expire    = Date + HostExpire * 60;
@@ -64,7 +64,7 @@ struct HostIPv6 {
 };
 
 struct Closer {
-    bool operator() (const HostIPv6 & lhs, const HostIPv6 & rhs) const {
+    bool operator() (const HostIP & lhs, const HostIP & rhs) const {
         return (lhs.Expire > rhs.Expire);
     }
 };
@@ -242,13 +242,13 @@ static void AddToDeny(std::string Host) {
 }
 
 static bool UpdateHost(const std::string & Host,
-                       std::vector<HostIPv6> & Hosts,
+                       std::vector<HostIP> & Hosts,
                        unsigned int Repeated) {
     bool InsertRequired = true;
 
     soft_assert(!Host.empty());
 
-    for (std::vector<HostIPv6>::iterator it = Hosts.begin();
+    for (std::vector<HostIP>::iterator it = Hosts.begin();
          it != Hosts.end(); ++it) {
         if ((*it).Address.compare(Host) == 0) {
             InsertRequired = false;
@@ -274,7 +274,7 @@ static bool UpdateHost(const std::string & Host,
     return InsertRequired;
 }
 
-static void ReadLine(int File, std::vector<HostIPv6> & Hosts) {
+static void ReadLine(int File, std::vector<HostIP> & Hosts) {
     char Line[255];
     char * Address;
     std::string Host;
@@ -330,7 +330,7 @@ static void ReadLine(int File, std::vector<HostIPv6> & Hosts) {
 
         if (UpdateHost(LastAddress, Hosts, Repeated)) {
             // Insert new host
-            Hosts.push_back(HostIPv6(time(0), Host));
+            Hosts.push_back(HostIP(time(0), Host));
         }
 
         // In any case, resort list
@@ -340,7 +340,7 @@ static void ReadLine(int File, std::vector<HostIPv6> & Hosts) {
 }
 
 int main(int argc, char ** argv) {
-    std::vector<HostIPv6> Hosts;
+    std::vector<HostIP> Hosts;
     struct sigaction SigHandling;
 
     unreferenced_parameter(argc);
