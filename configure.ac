@@ -2,9 +2,9 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([ForbidHostsv6], [1.0], [pierre@reactos.org])
-AC_CONFIG_SRCDIR([ForbidHostsv6.cpp])
-AC_CONFIG_HEADERS([ForbidHostsv6.h])
+AC_INIT([ForbidHosts], [1.0], [pierre@reactos.org])
+AC_CONFIG_SRCDIR([ForbidHosts.cpp])
+AC_CONFIG_HEADERS([ForbidHosts.h])
 AM_INIT_AUTOMAKE
 
 AC_REQUIRE_CPP

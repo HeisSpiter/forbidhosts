@@ -16,7 +16,7 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ForbidHostsv6.h"
+#include "ForbidHosts.h"
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
