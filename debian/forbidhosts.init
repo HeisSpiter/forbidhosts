@@ -1,0 +1,50 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          forbidhosts
+# Required-Start:    $syslog $local_fs $remote_fs $time
+# Required-Stop:     $syslog $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: forbidhosts
+# Description:       SSH IPv4 and IPv6 connections check
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+[ -f /etc/default/rcS ] && . /etc/default/rcS
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+PROGRAM=/usr/sbin/ForbidHosts
+
+test -x $PROGRAM || exit 0
+
+case "$1" in
+  start)
+        COUNT=`pgrep -c ForbidHosts`
+        [ "x$COUNT" != "x0" ] && exit 0
+        $PROGRAM
+        exit 0
+        ;;
+  stop)
+        pkill -15 ForbidHosts
+        exit 0
+        ;;
+  force-reload|restart)
+        $0 stop
+        $0 start
+        ;;
+  status)
+        COUNT=`pgrep -c ForbidHosts`
+        if [ "x$COUNT" != "x0" ]; then
+            echo "Running"
+        else
+            echo "Not running"
+        fi
+        exit 0
+        ;;
+  *)
+        echo "Usage: /etc/init.d/forbidhosts {start|stop|restart|force-reload|status}"
+        exit 1
+esac
+
+exit 0

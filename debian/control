@@ -1,0 +1,21 @@
+Source: forbidhosts
+Maintainer: Pierre Schweitzer <pierre@reactos.org>
+Section: net
+Priority: extra
+Standards-Version: 3.9.3
+Build-Depends: debhelper (>= 9), autotools-dev, libtool, autoconf, automake, dh-autoreconf
+
+Package: forbidhosts
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Tool for checking IPv4 and IPv6 SSH failed connections
+ ForbidHosts is a tool that has been designed to run with DenyHosts on IPv6 enabled systems. While DenyHosts will catch IPv4 connections on SSH, ForbidHosts only focuses on IPv6 connections.
+ .
+ Its behaviour is simple. Once too many connections attempts have been detected, it simply adds the IP in /etc/hosts.deny and mails root.
+ .
+ ForbidHosts does not take any argument. Run it, it will fork in background. Kill it with signals.
+ .
+ This has been specifically designed for the ReactOS Foundation infrastructure, but we are open to suggestions and patches :-).
+ .
+ Starting on the 26-Aug-2014, support for IPv4 was added (optional though) because Ubuntu dropped DenyHosts in Ubuntu 14.04 LTS. The features for IPv4 and IPv6 are exactly the same.
+Homepage: https://www.reactos.org
