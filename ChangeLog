@@ -1,12 +1,28 @@
+2014-09-04  Pierre Schweitzer <pierre@reactos.org>
+
+    * Allow the daemon to be packaged for Ubuntu (precise, so far)
+    * Makefile.am: Make the daemon a sbin executable
+
+2014-08-27  Pierre Schweitzer <pierre@reactos.org>
+
+    * Renamed project to ForbidHosts
+
+2014-08-26  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHostsv6.cpp: Fix performance issue with HostIPv6 initialization
+    * ForbidHostsv6.cpp: Reduce a variable scope
+    * ForbidHostsv6.cpp: Add optional support for IPv4 adresses.
+      To enable it, use --enable-ipv4 during configure phase.
+    * ForbidHostsv6.cpp: Also implement support for zombies. This will prevent daemon from leaking child processes.
+    * ForbidHostsv6.cpp: Rewrite signals management to more up to date API.
+    * ForbidHostsv6.cpp: Add missing header
+
 2012-05-13  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHostsv6.cpp: Fix a bug with syslog output
     * ForbidHostsv6.cpp: Add new functions and associated macros to have asserts that write their result to syslog.
       Those assert can be either soft or hard, if hard the deamon quits.
     * ForbidHostsv6.cpp: Use them instead of ignoring the return of some functions.
-
-2012-05-13  Pierre Schweitzer <pierre@reactos.org>
-
     * ForbidHostsv6.cpp: Fix a bug in connections attempts count
     * ForbidHostsv6.cpp: Fix a bug in line parsing
     * ForbidHostsv6.cpp: Add support for the line repetitions in auth log
