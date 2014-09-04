@@ -1,4 +1,4 @@
-bin_PROGRAMS = ForbidHosts
+sbin_PROGRAMS = ForbidHosts
 
 AM_CXXFLAGS = $(INTI_CFLAGS)
 
