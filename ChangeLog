@@ -1,5 +1,6 @@
 2014-09-05  Pierre Schweitzer <pierre@reactos.org>
 
+    * ForbidHosts.cpp: Get the hostname of the machine to include it in mails header.
     * ForbidHosts.cpp: Fix a bug with name resolutions for IPv4 where it was improperly handled.
 
 2014-09-04  Pierre Schweitzer <pierre@reactos.org>

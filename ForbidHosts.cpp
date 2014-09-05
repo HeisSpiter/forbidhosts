@@ -29,6 +29,7 @@
 #include <netdb.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <string>
 #include <vector>
@@ -48,8 +49,10 @@ const unsigned int MaxAttempts    = 5;
 const unsigned int HostExpire     = 5;
 const unsigned int FailurePenalty = 1;
 const char * AuthLogFile          = "/var/log/auth.log";
-const char * MailCommand          = "/usr/bin/mailx -s 'ForbidHosts Report' "
+const char * MailCommandTpl       = "/usr/bin/mailx -s '%s - ForbidHosts Report' "
                                     "root";
+char MailCommand[HOST_NAME_MAX + sizeof(MailCommandTpl) / sizeof(MailCommandTpl[0])];
+
 struct HostIP {
     time_t       FirstSeen;
     std::string  Address;
@@ -421,6 +424,18 @@ int main(int argc, char ** argv) {
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
+
+#ifndef WITHOUT_EMAIL
+    // Get our hostname
+    {
+        char HostName[HOST_NAME_MAX + 1];
+        if (gethostname(HostName, sizeof(HostName)) < 0) {
+            exit(EXIT_FAILURE);
+        }
+
+        sprintf(MailCommand, MailCommandTpl, HostName);
+    }
+#endif
 
     int AuthLog = open(AuthLogFile, O_RDONLY | O_NONBLOCK);
     if (AuthLog < 0) {
