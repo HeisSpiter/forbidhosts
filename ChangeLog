@@ -1,3 +1,7 @@
+2014-09-05  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Fix a bug with name resolutions for IPv4 where it was improperly handled.
+
 2014-09-04  Pierre Schweitzer <pierre@reactos.org>
 
     * Allow the daemon to be packaged for Ubuntu (precise, so far)

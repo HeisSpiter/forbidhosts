@@ -203,7 +203,8 @@ static void AddToDeny(std::string Host) {
     // Write the new entry
 #ifdef WITH_IPV4
     // [] are only needed for IPv6
-    if (Host.find(';') != std::string::npos) {
+    bool IsIPv6 = (Host.find(';') != std::string::npos);
+    if (IsIPv6) {
         Entry = "sshd: [" + Host + "]\n";
     } else {
         Entry = "sshd: " + Host + "\n";
@@ -219,13 +220,31 @@ static void AddToDeny(std::string Host) {
 
 #ifndef WITHOUT_EMAIL
     // Look up the IP address
-    struct sockaddr_in6 SockAddr;
-    inet_pton(AF_INET6, Host.c_str(), &(SockAddr.sin6_addr));
-    SockAddr.sin6_family = AF_INET6;
+    struct sockaddr * SockAddr;
+    size_t SizeOfSockAddr;
+#ifdef WITH_IPV4
+    struct sockaddr_in SockAddrv4;
+#endif
+    struct sockaddr_in6 SockAddrv6;
+
+#ifdef WITH_IPV4
+    if (!IsIPv6) {
+        SockAddr = (struct sockaddr *)&SockAddrv4;
+        SizeOfSockAddr = sizeof(SockAddrv4);
+        inet_pton(AF_INET, Host.c_str(), &(SockAddrv4.sin_addr));
+        SockAddrv4.sin_family = AF_INET;
+    } else {
+#endif
+        SockAddr = (struct sockaddr *)&SockAddrv6;
+        SizeOfSockAddr = sizeof(SockAddrv6);
+        inet_pton(AF_INET6, Host.c_str(), &(SockAddrv6.sin6_addr));
+        SockAddrv6.sin6_family = AF_INET6;
+#ifdef WITH_IPV4
+    }
+#endif
 
     char Name[NI_MAXHOST] = "";
-    getnameinfo((struct sockaddr *)&SockAddr, sizeof(SockAddr),
-                Name, NI_MAXHOST, NULL, 0, 0);
+    getnameinfo(SockAddr, SizeOfSockAddr, Name, NI_MAXHOST, NULL, 0, 0);
 
     // Send the mail
     FILE *Mailer = popen(MailCommand, "w");
