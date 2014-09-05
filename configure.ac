@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([ForbidHosts], [1.0], [pierre@reactos.org])
+AC_INIT([ForbidHosts], [1.1], [pierre@reactos.org])
 AC_CONFIG_SRCDIR([ForbidHosts.cpp])
 AC_CONFIG_HEADERS([ForbidHosts.h])
 AM_INIT_AUTOMAKE
@@ -12,11 +12,13 @@ AC_REQUIRE_CPP
 # Checks for programs.
 AC_PROG_CPP
 AM_PROG_CC_C_O
+AC_PROG_LN_S
+AC_PROG_RANLIB
 
 AC_LANG([C++])
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h sys/socket.h syslog.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h sys/socket.h syslog.h limits.h])
 
 AC_ARG_ENABLE(inotify, [  --disable-inotify  Disable inotify use.], [],[enableval=yes])
 if test "z$enableval" = zno ; then
@@ -54,13 +56,15 @@ fi
 AM_CONDITIONAL(WITH_IPV4, test $enable_ipv4 != "no")
 
 # Check for functions
-AC_CHECK_FUNCS([strstr strchr])
+AC_CHECK_FUNCS([strstr strchr gethostname memset strtoul])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_FUNC_FORK
 AC_HEADER_STDBOOL
 AC_PROG_CXX
 AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
 
 AC_CONFIG_FILES([makefile])
 AC_OUTPUT
