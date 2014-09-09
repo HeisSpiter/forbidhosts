@@ -1,3 +1,9 @@
+2014-09-09  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Don't prune host entry while it is being written to hosts.deny. This fixes the bug when a host was added several times to the file.
+      Now hosts will be pruned later on, on their expiry time, which will be extended to prevent the host is prunned before it was properly and completely handled.
+      This allows changing the way hosts are handled when added to hosts.deny that will give a small boost in performances.
+
 2014-09-05  Pierre Schweitzer <pierre@reactos.org>
 
     * configure.ac: Complete the configure script

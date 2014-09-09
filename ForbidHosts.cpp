@@ -58,11 +58,13 @@ struct HostIP {
     std::string  Address;
     unsigned int Attempts;
     time_t       Expire;
+    bool         Written;
 
     HostIP(time_t Date, const std::string & AuthAddress) : Address(AuthAddress) {
         FirstSeen = Date;
         Attempts  = 1;
         Expire    = Date + HostExpire * 60;
+        Written   = false;
     }
 };
 
@@ -188,7 +190,7 @@ static unsigned int IsLastRepeated(char * Line) {
     return strtoul(Times, 0, 10);
 }
 
-static void AddToDeny(std::string Host) {
+static void AddToDeny(const std::string & Host) {
     std::string Entry;
 
     pid_t Child = fork();
@@ -277,11 +279,15 @@ static bool UpdateHost(const std::string & Host,
 
             (*it).Attempts += Repeated;
 
-            if ((*it).Attempts >= MaxAttempts) {
+            if ((*it).Attempts >= MaxAttempts && !(*it).Written) {
                 // Max attempts
                 // Add to hosts.deny
                 AddToDeny((*it).Address);
-                Hosts.erase(it);
+                // Postpone a bit its expire so that it's still valid
+                // if we have further events in log to process
+                // It will get pruned later on when its expire date is gone
+                (*it).Expire += 60;
+                (*it).Written = true;
             } else {
                 // Update expire
                 (*it).Expire += (FailurePenalty * 60);
