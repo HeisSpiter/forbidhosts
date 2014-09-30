@@ -1,3 +1,7 @@
+2014-09-30  Pierre Schweitzer <pierre@reactos.org>
+    * Makefile.am: Enable a few more warnings
+    * ForbidHosts.cpp: Fix the new warnings
+
 2014-09-09  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: Don't prune host entry while it is being written to hosts.deny. This fixes the bug when a host was added several times to the file.

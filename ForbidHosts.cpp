@@ -44,21 +44,20 @@
 #define unused_return(f) if (f) {}
 #define soft_assert(e) if (!(e)) Assert(__FILE__, __LINE__, #e)
 #define hard_assert(e) if (!(e)) Assert(__FILE__, __LINE__, #e, true)
+#define MailCommandTpl "/usr/bin/mailx -s '%s - ForbidHosts Report' root"
 
 const unsigned int MaxAttempts    = 5;
-const unsigned int HostExpire     = 5;
+const time_t HostExpire           = 5;
 const unsigned int FailurePenalty = 1;
 const char * AuthLogFile          = "/var/log/auth.log";
-const char * MailCommandTpl       = "/usr/bin/mailx -s '%s - ForbidHosts Report' "
-                                    "root";
 char MailCommand[HOST_NAME_MAX + sizeof(MailCommandTpl) / sizeof(MailCommandTpl[0])];
 
 struct HostIP {
-    time_t       FirstSeen;
-    std::string  Address;
-    unsigned int Attempts;
-    time_t       Expire;
-    bool         Written;
+    time_t            FirstSeen;
+    std::string       Address;
+    long unsigned int Attempts;
+    time_t            Expire;
+    bool              Written;
 
     HostIP(time_t Date, const std::string & AuthAddress) : Address(AuthAddress) {
         FirstSeen = Date;
@@ -92,7 +91,7 @@ static void SignalHandler(int Signal) {
 }
 
 static bool IsValidLine(char * Line, char ** Address,
-                        unsigned int * AddressLength) {
+                        size_t * AddressLength) {
     char * SSHd;
     char * Method;
     char * User;
@@ -162,7 +161,7 @@ static bool IsValidLine(char * Line, char ** Address,
     return true;
 }
 
-static unsigned int IsLastRepeated(char * Line) {
+static long unsigned int IsLastRepeated(char * Line) {
     char * SSHd;
     char * Times;
     char * End;
@@ -226,7 +225,7 @@ static void AddToDeny(const std::string & Host) {
 #ifndef WITHOUT_EMAIL
     // Look up the IP address
     struct sockaddr * SockAddr;
-    size_t SizeOfSockAddr;
+    socklen_t SizeOfSockAddr;
 #ifdef WITH_IPV4
     struct sockaddr_in SockAddrv4;
 #endif
@@ -267,7 +266,7 @@ static void AddToDeny(const std::string & Host) {
 
 static bool UpdateHost(const std::string & Host,
                        std::vector<HostIP> & Hosts,
-                       unsigned int Repeated) {
+                       long unsigned int Repeated) {
     bool InsertRequired = true;
 
     soft_assert(!Host.empty());
@@ -307,7 +306,9 @@ static void ReadLine(int File, std::vector<HostIP> & Hosts) {
     char * Address;
     std::string Host;
     static std::string LastAddress = "";
-    unsigned int Length, AddressLength, Repeated = 1;
+    long unsigned int Repeated = 1;
+    size_t AddressLength;
+    ssize_t Length;
 
     for (;;) {
         unsigned int Read = 0;
@@ -476,7 +477,7 @@ int main(int argc, char ** argv) {
         // Set the poll timeout to the first
         // expired host to purge
         if (!Hosts.empty()) {
-            Timeout = Hosts.back().Expire - time(0) * 1000;
+            Timeout = (int)Hosts.back().Expire - (int)time(0) * 1000;
         }
 
         int Event = poll(FDs, 1, Timeout);

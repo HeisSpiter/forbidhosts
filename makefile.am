@@ -4,4 +4,4 @@ AM_CXXFLAGS = $(INTI_CFLAGS)
 
 ForbidHosts_SOURCES = ForbidHosts.cpp
 ForbidHosts_LDADD = $(INTI_LIBS)
-ForbidHosts_CPPFLAGS=-Werror -W -Wall -Wextra -ansi -pedantic
+ForbidHosts_CPPFLAGS=-Werror -W -Wall -Wextra -ansi -pedantic -pedantic-errors -Wextra -Wcast-align -Wcast-qual  -Wchar-subscripts  -Wcomment -Wconversion -Wdisabled-optimization -Wfloat-equal  -Wformat  -Wformat=2 -Wformat-nonliteral -Wformat-security -Wformat-y2k
