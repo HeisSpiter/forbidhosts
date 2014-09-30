@@ -7,3 +7,7 @@ override_dh_autoreconf:
 
 override_dh_auto_configure:
 	dh_auto_configure -- --enable-ipv4
+
+override_dh_strip:
+	dh_strip --dbg-package=forbidhosts-dbg
+

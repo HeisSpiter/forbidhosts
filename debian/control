@@ -7,7 +7,9 @@ Build-Depends: debhelper (>= 9), autotools-dev, libtool, autoconf, automake, dh-
 
 Package: forbidhosts
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Section: net
+Priority: extra
+Depends: ${misc:Depends}
 Description: Tool for checking IPv4 and IPv6 SSH failed connections
  ForbidHosts is a tool that has been designed to run with DenyHosts on IPv6 enabled systems. While DenyHosts will catch IPv4 connections on SSH, ForbidHosts only focuses on IPv6 connections.
  .
@@ -19,3 +21,15 @@ Description: Tool for checking IPv4 and IPv6 SSH failed connections
  .
  Starting on the 26-Aug-2014, support for IPv4 was added (optional though) because Ubuntu dropped DenyHosts in Ubuntu 14.04 LTS. The features for IPv4 and IPv6 are exactly the same.
 Homepage: https://www.reactos.org
+
+Package: forbidhosts-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Depends: forbidhosts (= ${binary:Version}), ${misc:Depends}
+Description: debugging symbols for forbidhosts
+ ForbidHosts is a tool that has been designed to run with DenyHosts on IPv6 enabled systems. While DenyHosts will catch IPv4 connections on SSH, ForbidHosts only focuses on IPv6 connections.
+ .
+ This package contains the debugging symbols for forbidhosts.
+Homepage: https://www.reactos.org
+
