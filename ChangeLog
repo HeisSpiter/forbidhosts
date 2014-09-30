@@ -4,6 +4,7 @@
     * ForbidHosts.cpp: Fix the new warnings
     * ForbidHosts.cpp: Simplify code for IP lookup
     * ForbidHosts.cpp: Fix last cppcheck warnings
+    * Makefile.am: Build with debug symbols by default
 
 2014-09-09  Pierre Schweitzer <pierre@reactos.org>
 
