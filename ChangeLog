@@ -1,6 +1,8 @@
 2014-09-30  Pierre Schweitzer <pierre@reactos.org>
+
     * Makefile.am: Enable a few more warnings
     * ForbidHosts.cpp: Fix the new warnings
+    * ForbidHosts.cpp: Simplify code for IP lookup
 
 2014-09-09  Pierre Schweitzer <pierre@reactos.org>
 

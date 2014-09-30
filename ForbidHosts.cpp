@@ -224,31 +224,28 @@ static void AddToDeny(const std::string & Host) {
 
 #ifndef WITHOUT_EMAIL
     // Look up the IP address
-    struct sockaddr * SockAddr;
-    socklen_t SizeOfSockAddr;
+    union {
 #ifdef WITH_IPV4
-    struct sockaddr_in SockAddrv4;
+        struct sockaddr_in in;
 #endif
-    struct sockaddr_in6 SockAddrv6;
+        struct sockaddr_in6 in6;
+        struct sockaddr sa;
+    } SockAddr;
 
 #ifdef WITH_IPV4
     if (!IsIPv6) {
-        SockAddr = (struct sockaddr *)&SockAddrv4;
-        SizeOfSockAddr = sizeof(SockAddrv4);
-        inet_pton(AF_INET, Host.c_str(), &(SockAddrv4.sin_addr));
-        SockAddrv4.sin_family = AF_INET;
+        inet_pton(AF_INET, Host.c_str(), &(SockAddr.in.sin_addr));
+        SockAddr.in.sin_family = AF_INET;
     } else {
 #endif
-        SockAddr = (struct sockaddr *)&SockAddrv6;
-        SizeOfSockAddr = sizeof(SockAddrv6);
-        inet_pton(AF_INET6, Host.c_str(), &(SockAddrv6.sin6_addr));
-        SockAddrv6.sin6_family = AF_INET6;
+        inet_pton(AF_INET6, Host.c_str(), &(SockAddr.in6.sin6_addr));
+        SockAddr.in6.sin6_family = AF_INET6;
 #ifdef WITH_IPV4
     }
 #endif
 
     char Name[NI_MAXHOST] = "";
-    getnameinfo(SockAddr, SizeOfSockAddr, Name, NI_MAXHOST, NULL, 0, 0);
+    getnameinfo(&SockAddr.sa, sizeof(SockAddr), Name, NI_MAXHOST, NULL, 0, 0);
 
     // Send the mail
     FILE *Mailer = popen(MailCommand, "w");
