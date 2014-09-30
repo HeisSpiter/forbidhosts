@@ -1,14 +1,20 @@
+forbidhosts (1.3-1) precise; urgency=low
+
+  * New upstream release
+
+ -- Pierre Schweitzer <pierre@reactos.org>  Tue, 30 Sep 2014 15:09:17 +0200
+
 forbidhosts (1.2-1) precise; urgency=low
 
   * New upstream release
 
- -- Pierre Schweitzer <pierre@reactos.org>  Thu, 19 Sep 2014 19:09:04 +0200
+ -- Pierre Schweitzer <pierre@reactos.org>  Fri, 19 Sep 2014 19:09:04 +0200
 
 forbidhosts (1.1-1) precise; urgency=low
 
   * New upstream release
 
- -- Pierre Schweitzer <pierre@reactos.org>  Thu, 5 Sep 2014 15:56:43 +0200
+ -- Pierre Schweitzer <pierre@reactos.org>  Fri, 5 Sep 2014 15:56:43 +0200
 
 forbidhosts (1.0-1) precise; urgency=low
 
