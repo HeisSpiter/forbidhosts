@@ -128,7 +128,7 @@ static bool IsValidLine(char * Line, char ** Address,
         return false;
     }
     // It is mandatory not to take \0 into account
-    Host += sizeof(" from ") - sizeof('\0');
+    Host += sizeof(" from ") - sizeof(char);
 
     // With a port
     End = strstr(Host, " port ");
@@ -178,7 +178,7 @@ static long unsigned int IsLastRepeated(char * Line) {
         return 0;
     }
     // We want the exact number
-    Times += sizeof(": last message repeated ") - sizeof('\0');
+    Times += sizeof(": last message repeated ") - sizeof(char);
 
     // Ensure the complete line is correct
     End = strstr(Times, " times");
