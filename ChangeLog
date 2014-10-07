@@ -1,3 +1,7 @@
+2014-10-07  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Read complete inotify event when available
+
 2014-09-30  Pierre Schweitzer <pierre@reactos.org>
 
     * Makefile.am: Enable a few more warnings

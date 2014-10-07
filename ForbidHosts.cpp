@@ -482,11 +482,17 @@ int main(int argc, char ** argv) {
             break;
         } else if (Event > 0) {
             struct inotify_event iEvent;
+            char Buffer[NAME_MAX + 1];
 
             // Read the pending event
             // It will concern iAuth
             soft_assert(read(iNotify, &iEvent, sizeof(struct inotify_event)) ==
                         sizeof(struct inotify_event));
+
+            if (iEvent.len > 0) {
+                // Read the rest of the event
+                soft_assert(read(iNotify, Buffer, iEvent.len) == iEvent.len);
+            }
         }
 
         // Whatever happens, fall through
