@@ -456,7 +456,8 @@ int main(int argc, char ** argv) {
         exit(EXIT_FAILURE);
     }
 
-    int iAuth = inotify_add_watch(iNotify, AuthLogFile, IN_MODIFY);
+    int iAuth = inotify_add_watch(iNotify, AuthLogFile,
+                                  IN_MODIFY | IN_MOVE_SELF | IN_DELETE_SELF);
     if (iAuth < 0) {
         close(iNotify);
         close(AuthLog);
@@ -492,6 +493,29 @@ int main(int argc, char ** argv) {
             if (iEvent.len > 0) {
                 // Read the rest of the event
                 soft_assert(read(iNotify, Buffer, iEvent.len) == iEvent.len);
+            }
+
+            // Check the event
+            if (iEvent.mask & IN_MOVE_SELF ||
+                iEvent.mask & IN_DELETE_SELF) {
+                // We got moved/deleted (likely log rotate)
+                soft_assert((iEvent.mask & IN_MODIFY) != IN_MODIFY);
+
+                // Close file and restart
+                soft_assert(close(AuthLog) == 0);
+
+                AuthLog = open(AuthLogFile, O_RDONLY | O_NONBLOCK);
+                if (AuthLog < 0) {
+                    AuthLog = 0;
+                    syslog(LOG_ERR, "Failed to reopen auth.log. Quitting.");
+                    break;
+                }
+
+                // Only take care of new entries
+                lseek(AuthLog, 0, SEEK_END);
+
+                // Move back to watching
+                continue;
             }
         }
 

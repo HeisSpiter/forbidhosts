@@ -1,5 +1,6 @@
 2014-10-07  Pierre Schweitzer <pierre@reactos.org>
 
+    * ForbidHosts.cpp: When using inotify, handle auth.log deletion/moving. This is to keep ForbidHosts functionnal even after a log rotate.
     * ForbidHosts.cpp: Read complete inotify event when available
 
 2014-09-30  Pierre Schweitzer <pierre@reactos.org>
