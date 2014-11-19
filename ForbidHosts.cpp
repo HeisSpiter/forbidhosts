@@ -245,7 +245,10 @@ static void AddToDeny(const std::string & Host) {
 #endif
 
     char Name[NI_MAXHOST] = "";
-    getnameinfo(&SockAddr.sa, sizeof(SockAddr), Name, NI_MAXHOST, NULL, 0, 0);
+    if (getnameinfo(&SockAddr.sa, sizeof(SockAddr), Name, NI_MAXHOST, NULL, 0, 0) != 0)
+    {
+        snprintf(Name, NI_MAXHOST, "%s", "Unknown");
+    }
 
     // Send the mail
     FILE *Mailer = popen(MailCommand, "w");

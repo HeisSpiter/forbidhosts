@@ -1,6 +1,7 @@
 2014-11-19  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: Fix handling of IPv6 when adding to hosts.deny. This fixes incorrect syntax in the file.
+    * ForbidHosts.cpp: Handle name resolution failure: display unknown instead of empty/garbish string.
 
 2014-10-07  Pierre Schweitzer <pierre@reactos.org>
 
