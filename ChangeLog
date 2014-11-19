@@ -1,3 +1,7 @@
+2014-11-19  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Fix handling of IPv6 when adding to hosts.deny. This fixes incorrect syntax in the file.
+
 2014-10-07  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: When using inotify, handle auth.log deletion/moving. This is to keep ForbidHosts functionnal even after a log rotate.

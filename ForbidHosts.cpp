@@ -207,7 +207,7 @@ static void AddToDeny(const std::string & Host) {
     // Write the new entry
 #ifdef WITH_IPV4
     // [] are only needed for IPv6
-    bool IsIPv6 = (Host.find(';') != std::string::npos);
+    bool IsIPv6 = (Host.find(':') != std::string::npos);
     if (IsIPv6) {
         Entry = "sshd: [" + Host + "]\n";
     } else {
