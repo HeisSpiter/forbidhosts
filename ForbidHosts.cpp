@@ -504,6 +504,9 @@ int main(int argc, char ** argv) {
                 // We got moved/deleted (likely log rotate)
                 soft_assert((iEvent.mask & IN_MODIFY) != IN_MODIFY);
 
+                // Remove the file from watch list
+                inotify_rm_watch(iNotify, iAuth);
+
                 // Close file and restart
                 soft_assert(close(AuthLog) == 0);
 
@@ -516,6 +519,15 @@ int main(int argc, char ** argv) {
 
                 // Only take care of new entries
                 lseek(AuthLog, 0, SEEK_END);
+
+                // Reinit watching
+                iAuth = inotify_add_watch(iNotify, AuthLogFile,
+                                          IN_MODIFY | IN_MOVE_SELF | IN_DELETE_SELF);
+                if (iAuth < 0) {
+                    close(iNotify);
+                    close(AuthLog);
+                    exit(EXIT_FAILURE);
+                }
 
                 // Move back to watching
                 continue;
@@ -542,7 +554,7 @@ int main(int argc, char ** argv) {
     }
 
 #ifndef WITHOUT_INOTIFY
-    close(iAuth);
+    inotify_rm_watch(iNotify, iAuth);
     close(iNotify);
 #endif
     close(AuthLog);
