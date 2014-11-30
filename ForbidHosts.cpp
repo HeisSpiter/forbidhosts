@@ -39,6 +39,7 @@
 #include <cstdio>
 #include <csignal>
 #include <iostream>
+#include <cstddef>
 
 #define unreferenced_parameter(p) (void)p
 #define unused_return(f) if (f) {}
@@ -49,7 +50,9 @@
 const unsigned int MaxAttempts    = 5;
 const time_t HostExpire           = 5;
 const unsigned int FailurePenalty = 1;
+const char * AuthLogDir           = "/var/log/";
 const char * AuthLogFile          = "/var/log/auth.log";
+const char * AuthFileName         = AuthLogFile + sizeof(AuthLogDir) / sizeof(AuthLogDir[0]) - 1;
 char MailCommand[HOST_NAME_MAX + sizeof(MailCommandTpl) / sizeof(MailCommandTpl[0])];
 
 struct HostIP {
@@ -459,9 +462,17 @@ int main(int argc, char ** argv) {
         exit(EXIT_FAILURE);
     }
 
-    int iAuth = inotify_add_watch(iNotify, AuthLogFile,
-                                  IN_MODIFY | IN_MOVE_SELF | IN_DELETE_SELF);
+    int iAuth = inotify_add_watch(iNotify, AuthLogFile, IN_MODIFY);
     if (iAuth < 0) {
+        close(iNotify);
+        close(AuthLog);
+        exit(EXIT_FAILURE);
+    }
+
+    // Also watch log dir to spot new auth.log
+    int iDir = inotify_add_watch(iNotify, AuthLogDir, IN_CREATE);
+    if (iDir < 0) {
+        inotify_rm_watch(iNotify, iAuth);
         close(iNotify);
         close(AuthLog);
         exit(EXIT_FAILURE);
@@ -485,24 +496,31 @@ int main(int argc, char ** argv) {
         if (Event < 0) {
             break;
         } else if (Event > 0) {
-            struct inotify_event iEvent;
-            char Buffer[NAME_MAX + 1];
+            // Make sure our iEvent is big enough for data & name
+            struct {
+                struct inotify_event Event;
+                char Buffer[NAME_MAX + 1];
+            } iEvent;
 
             // Read the pending event
             // It will concern iAuth
-            soft_assert(read(iNotify, &iEvent, sizeof(struct inotify_event)) ==
-                        sizeof(struct inotify_event));
+            soft_assert(read(iNotify, &iEvent, offsetof(struct inotify_event, name)) ==
+                        offsetof(struct inotify_event, name));
 
-            if (iEvent.len > 0) {
-                // Read the rest of the event
-                soft_assert(read(iNotify, Buffer, iEvent.len) == iEvent.len);
+            // If we have a name, read it
+            if (iEvent.Event.len > 0) {
+                soft_assert(read(iNotify, iEvent.Event.name, iEvent.Event.len) == iEvent.Event.len);
             }
 
             // Check the event
-            if (iEvent.mask & IN_MOVE_SELF ||
-                iEvent.mask & IN_DELETE_SELF) {
-                // We got moved/deleted (likely log rotate)
-                soft_assert((iEvent.mask & IN_MODIFY) != IN_MODIFY);
+            if (iEvent.Event.mask & IN_CREATE) {
+                // This happened in log dir
+                soft_assert(iEvent.Event.wd == iDir);
+
+                // Check we're dealing with our file
+                if (strncmp(iEvent.Event.name, AuthFileName, iEvent.Event.len - 1) != 0) {
+                    continue;
+                }
 
                 // Remove the file from watch list
                 inotify_rm_watch(iNotify, iAuth);
