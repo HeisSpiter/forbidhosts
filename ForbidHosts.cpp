@@ -571,6 +571,7 @@ int main(int argc, char ** argv) {
     }
 
 #ifndef WITHOUT_INOTIFY
+    inotify_rm_watch(iNotify, iDir);
     inotify_rm_watch(iNotify, iAuth);
     close(iNotify);
 #endif
