@@ -524,9 +524,8 @@ int main(int argc, char ** argv) {
                 iAuth = inotify_add_watch(iNotify, AuthLogFile,
                                           IN_MODIFY | IN_MOVE_SELF | IN_DELETE_SELF);
                 if (iAuth < 0) {
-                    close(iNotify);
-                    close(AuthLog);
-                    exit(EXIT_FAILURE);
+                    syslog(LOG_ERR, "Failed to rewatch auth.log. Quitting.");
+                    break;
                 }
 
                 // Move back to watching

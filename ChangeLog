@@ -1,3 +1,7 @@
+2014-11-30  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Properly quit in case we cannot watch again the auth.log
+
 2014-11-24  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: Addendum to 1289eab: also reset iNotify watch when auth.log is rotated. Otherwise we keep watching the wrong file (on a closed FD!).
