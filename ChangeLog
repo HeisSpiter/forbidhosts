@@ -1,3 +1,7 @@
+2014-12-03  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Fix the reinit of the inotify watch for the log file. We only watch modifications.
+
 2014-11-30  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: Rewrite handling of auth.log rotation. We'll now watch the parent directory and wait for the create event for auth.log.

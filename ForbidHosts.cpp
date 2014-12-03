@@ -539,8 +539,7 @@ int main(int argc, char ** argv) {
                 lseek(AuthLog, 0, SEEK_END);
 
                 // Reinit watching
-                iAuth = inotify_add_watch(iNotify, AuthLogFile,
-                                          IN_MODIFY | IN_MOVE_SELF | IN_DELETE_SELF);
+                iAuth = inotify_add_watch(iNotify, AuthLogFile, IN_MODIFY);
                 if (iAuth < 0) {
                     syslog(LOG_ERR, "Failed to rewatch auth.log. Quitting.");
                     break;
