@@ -504,6 +504,7 @@ int main(int argc, char ** argv) {
 
             // Read the pending event
             // It will concern iAuth
+            iEvent.Event.len = 0;
             soft_assert(read(iNotify, &iEvent, offsetof(struct inotify_event, name)) ==
                         offsetof(struct inotify_event, name));
 

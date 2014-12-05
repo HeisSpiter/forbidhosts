@@ -1,3 +1,7 @@
+2014-12-05  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Always zero inotify_event len field to prevent attempts to read random len of data from inotify.
+
 2014-12-03  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: Fix the reinit of the inotify watch for the log file. We only watch modifications.
