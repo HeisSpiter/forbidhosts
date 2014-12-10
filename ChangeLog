@@ -1,3 +1,9 @@
+2014-12-10  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: partly revert ccca64eee3c457ce91db2327df04d8e92a6824ee
+    * ForbidHosts.cpp: revert 45b834fbddcbf55e7e6bf874929e56ee36d6e122
+    * ForbidHosts.cpp: revert e4c6ec9de00c3fbf07ed3058410ed35b7f17b470
+
 2014-12-05  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: Always zero inotify_event len field to prevent attempts to read random len of data from inotify.

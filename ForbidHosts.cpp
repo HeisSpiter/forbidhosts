@@ -462,17 +462,9 @@ int main(int argc, char ** argv) {
         exit(EXIT_FAILURE);
     }
 
-    int iAuth = inotify_add_watch(iNotify, AuthLogFile, IN_MODIFY);
+    int iAuth = inotify_add_watch(iNotify, AuthLogFile,
+                                  IN_MODIFY | IN_MOVE_SELF | IN_DELETE_SELF);
     if (iAuth < 0) {
-        close(iNotify);
-        close(AuthLog);
-        exit(EXIT_FAILURE);
-    }
-
-    // Also watch log dir to spot new auth.log
-    int iDir = inotify_add_watch(iNotify, AuthLogDir, IN_CREATE);
-    if (iDir < 0) {
-        inotify_rm_watch(iNotify, iAuth);
         close(iNotify);
         close(AuthLog);
         exit(EXIT_FAILURE);
@@ -514,14 +506,10 @@ int main(int argc, char ** argv) {
             }
 
             // Check the event
-            if (iEvent.Event.mask & IN_CREATE) {
-                // This happened in log dir
-                soft_assert(iEvent.Event.wd == iDir);
-
-                // Check we're dealing with our file
-                if (strncmp(iEvent.Event.name, AuthFileName, iEvent.Event.len - 1) != 0) {
-                    continue;
-                }
+            if (iEvent.Event.mask & IN_MOVE_SELF ||
+                iEvent.Event.mask & IN_DELETE_SELF) {
+                // We got moved/deleted (likely log rotate)
+                soft_assert((iEvent.Event.mask & IN_MODIFY) != IN_MODIFY);
 
                 // Remove the file from watch list
                 inotify_rm_watch(iNotify, iAuth);
@@ -540,7 +528,8 @@ int main(int argc, char ** argv) {
                 lseek(AuthLog, 0, SEEK_END);
 
                 // Reinit watching
-                iAuth = inotify_add_watch(iNotify, AuthLogFile, IN_MODIFY);
+                iAuth = inotify_add_watch(iNotify, AuthLogFile,
+                                          IN_MODIFY | IN_MOVE_SELF | IN_DELETE_SELF);
                 if (iAuth < 0) {
                     syslog(LOG_ERR, "Failed to rewatch auth.log. Quitting.");
                     break;
@@ -571,7 +560,6 @@ int main(int argc, char ** argv) {
     }
 
 #ifndef WITHOUT_INOTIFY
-    inotify_rm_watch(iNotify, iDir);
     inotify_rm_watch(iNotify, iAuth);
     close(iNotify);
 #endif
