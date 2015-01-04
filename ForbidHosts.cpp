@@ -121,7 +121,7 @@ static void ExceptionHandler(int Signal, siginfo_t * SigInfo, void * Context) {
     }
 
     // Immediately print to log, in case something would go wrong afterwards
-    syslog(LOG_CRIT, "Exception %d occured at %p - will quit", Signal, SigInfo->si_addr);
+    syslog(LOG_CRIT, "(%s) Exception %d occured at %p - will quit", VERSION, Signal, SigInfo->si_addr);
 
 #ifndef WITHOUT_EMAIL
     // Prepare for mailing in case we've to mail
@@ -143,7 +143,7 @@ static void ExceptionHandler(int Signal, siginfo_t * SigInfo, void * Context) {
     if (NumberAddresses == 0) {
 #ifndef WITHOUT_EMAIL
         if (Mailer) {
-            fprintf(Mailer, "Crashed with signal %d.\nNo backtrace could be generated.", Signal);
+            fprintf(Mailer, "(%s) Crashed with signal %d.\nNo backtrace could be generated.", VERSION, Signal);
             pclose(Mailer);
         }
 #endif
@@ -156,7 +156,7 @@ static void ExceptionHandler(int Signal, siginfo_t * SigInfo, void * Context) {
     if (Mailer)
     {
         std::stringstream OutputMail;
-        OutputMail << "Crashed with signal " << Signal << " at address "
+        OutputMail << "(" << VERSION << ") Crashed with signal " << Signal << " at address "
                    << SigInfo->si_addr << ".\nBacktrace:\n";
         for (Trace = 0; Trace < NumberAddresses; ++Trace) {
             OutputMail << (NumberAddresses - 1 - Trace) << ": " << Strings[Trace] << "\n";
