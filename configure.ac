@@ -10,7 +10,9 @@ AM_INIT_AUTOMAKE
 AC_REQUIRE_CPP
 
 # Checks for programs.
+AC_PROG_CXX
 AC_PROG_CPP
+AC_PROG_INSTALL
 AM_PROG_CC_C_O
 AC_PROG_LN_S
 AC_PROG_RANLIB
@@ -18,7 +20,7 @@ AC_PROG_RANLIB
 AC_LANG([C++])
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h sys/socket.h syslog.h limits.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h sys/socket.h syslog.h limits.h unistd.h])
 
 AC_ARG_ENABLE(inotify, [  --disable-inotify  Disable inotify use.], [],[enableval=yes])
 if test "z$enableval" = zno ; then
@@ -55,13 +57,12 @@ if test $enable_ipv4 = "yes" ; then
 fi
 AM_CONDITIONAL(WITH_IPV4, test $enable_ipv4 != "no")
 
-# Check for functions
+# Checks for library functions.
+AC_FUNC_FORK
 AC_CHECK_FUNCS([strstr strchr gethostname memset strtoul])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_FUNC_FORK
 AC_HEADER_STDBOOL
-AC_PROG_CXX
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
