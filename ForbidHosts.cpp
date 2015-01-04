@@ -30,8 +30,12 @@
 #include <syslog.h>
 #include <unistd.h>
 #include <limits.h>
+#include <execinfo.h>
 
 #include <string>
+#ifndef WITHOUT_EMAIL
+#include <sstream>
+#endif
 #include <vector>
 #include <ctime>
 #include <cstring>
@@ -46,14 +50,19 @@
 #define soft_assert(e) if (!(e)) Assert(__FILE__, __LINE__, #e)
 #define hard_assert(e) if (!(e)) Assert(__FILE__, __LINE__, #e, true)
 #define MailCommandTpl "/usr/bin/mailx -s '%s - ForbidHosts Report' root"
+#define CrashMailTpl "/usr/bin/mailx -s '%s - ForbidHosts Crash' root"
 
 const unsigned int MaxAttempts    = 5;
 const time_t HostExpire           = 5;
 const unsigned int FailurePenalty = 1;
+const unsigned int BackTraceSize  = 100;
 const char * AuthLogDir           = "/var/log/";
 const char * AuthLogFile          = "/var/log/auth.log";
 const char * AuthFileName         = AuthLogFile + sizeof(AuthLogDir) / sizeof(AuthLogDir[0]) - 1;
 char MailCommand[HOST_NAME_MAX + sizeof(MailCommandTpl) / sizeof(MailCommandTpl[0])];
+char CrashMail[HOST_NAME_MAX + sizeof(CrashMailTpl) / sizeof(CrashMailTpl[0])];
+
+bool AlreadyCrashed = false;
 
 struct HostIP {
     time_t            FirstSeen;
@@ -91,6 +100,83 @@ static void SignalHandler(int Signal) {
     unreferenced_parameter(Signal);
     syslog(LOG_INFO, "Deamon shutting down.");
     exit(EXIT_SUCCESS);
+}
+
+static void ExceptionHandler(int Signal, siginfo_t * SigInfo, void * Context) {
+    void * Buffer[BackTraceSize];
+    char ** Strings;
+    int Trace;
+
+    unreferenced_parameter(Context);
+
+    // Check if we already went into that crash handler
+    // If so, do nothing, otherwise, inform that we are crashing
+    // The whole point of this is to prevent infinite loop in case
+    // of a crash in the exception handler
+    // Even though, this might be questioned because we're manually reset
+    if (AlreadyCrashed == true) {
+        return;
+    } else {
+        AlreadyCrashed = true;
+    }
+
+    // Immediately print to log, in case something would go wrong afterwards
+    syslog(LOG_CRIT, "Exception %d occured at %p - will quit", Signal, SigInfo->si_addr);
+
+#ifndef WITHOUT_EMAIL
+    // Prepare for mailing in case we've to mail
+    FILE *Mailer = popen(CrashMail, "w");
+#endif
+
+    // Now, collect the backtrace
+    int NumberAddresses = backtrace(Buffer, BackTraceSize);
+    if (NumberAddresses != 0) {
+        // If we could, get associated symbols
+        Strings = backtrace_symbols(Buffer, NumberAddresses);
+        // If we couldn't get symbols, assume backtrace is empty
+        if (Strings == 0) {
+            NumberAddresses = 0;
+        }
+    }
+
+    // If we have no backtrace, mail if required and just quit
+    if (NumberAddresses == 0) {
+#ifndef WITHOUT_EMAIL
+        if (Mailer) {
+            fprintf(Mailer, "Crashed with signal %d.\nNo backtrace could be generated.", Signal);
+            pclose(Mailer);
+        }
+#endif
+
+        return;
+    }
+
+    // If we can, send the backtrace by email, one line per trace
+#ifndef WITHOUT_EMAIL
+    if (Mailer)
+    {
+        std::stringstream OutputMail;
+        OutputMail << "Crashed with signal " << Signal << " at address "
+                   << SigInfo->si_addr << ".\nBacktrace:\n";
+        for (Trace = 0; Trace < NumberAddresses; ++Trace) {
+            OutputMail << (NumberAddresses - 1 - Trace) << ": " << Strings[Trace] << "\n";
+        }
+
+        fprintf(Mailer, "%s", OutputMail.str().c_str());
+        pclose(Mailer);
+    } else {
+#endif
+        // If we cannot mail, either because opening mailer failed or because
+        // we are configured not to mail, then, print the backtrace to syslog
+        for (Trace = 0; Trace < NumberAddresses; ++Trace) {
+            syslog(LOG_CRIT, "%d: %s", NumberAddresses - 1 - Trace, Strings[Trace]);
+        }
+#ifndef WITHOUT_EMAIL
+    }
+#endif
+
+    // We're done
+    free(Strings);
 }
 
 static bool IsValidLine(char * Line, char ** Address,
@@ -397,6 +483,51 @@ int main(int argc, char ** argv) {
         exit(EXIT_FAILURE);
     }
 
+    memset(&SigHandling, 0, sizeof(struct sigaction));
+    SigHandling.sa_sigaction = ExceptionHandler;
+    SigHandling.sa_flags = SA_SIGINFO | SA_RESETHAND;
+
+    // Install exceptions handler
+    if (sigaction(SIGABRT, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (sigaction(SIGBUS, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (sigaction(SIGFPE, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (sigaction(SIGILL, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (sigaction(SIGSEGV, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (sigaction(SIGSYS, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (sigaction(SIGXCPU, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (sigaction(SIGXFSZ, &SigHandling, NULL) < 0) {
+        std::cerr << "Failed to install signal handler" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     // Prevent zombies
     SigHandling.sa_handler = NULL;
     SigHandling.sa_flags = SA_NOCLDWAIT;
@@ -444,6 +575,7 @@ int main(int argc, char ** argv) {
         }
 
         sprintf(MailCommand, MailCommandTpl, HostName);
+        sprintf(CrashMail, CrashMailTpl, HostName);
     }
 #endif
 
