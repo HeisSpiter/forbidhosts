@@ -1,3 +1,11 @@
+2015-01-04  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Add version number in backtrace on exception
+    * ForbidHosts.cpp: Add an exception handler for the abnormal termination that could occur if anything goes wrong in the daemon.
+      It will attempt to mail if mailing is enabled.
+      If not possible, it will fallback to syslog
+    * configure.ac: Complete the configure.ac template
+
 2014-12-10  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: partly revert ccca64eee3c457ce91db2327df04d8e92a6824ee
