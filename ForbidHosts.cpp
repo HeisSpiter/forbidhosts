@@ -686,7 +686,7 @@ int main(int argc, char ** argv) {
             Hosts.pop_back();
         }
 
-#ifndef WITHOUT_INOTIFY
+#ifdef WITHOUT_INOTIFY
         usleep(1000);
 #endif
     }
