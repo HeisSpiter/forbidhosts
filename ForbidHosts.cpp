@@ -652,7 +652,7 @@ int main(int argc, char ** argv) {
                 AuthLog = open(AuthLogFile, O_RDONLY | O_NONBLOCK);
                 if (AuthLog < 0) {
                     AuthLog = 0;
-                    syslog(LOG_ERR, "Failed to reopen auth.log. Quitting.");
+                    syslog(LOG_CRIT, "Failed to reopen auth.log. Quitting.");
                     break;
                 }
 
@@ -663,7 +663,7 @@ int main(int argc, char ** argv) {
                 iAuth = inotify_add_watch(iNotify, AuthLogFile,
                                           IN_MODIFY | IN_MOVE_SELF | IN_DELETE_SELF);
                 if (iAuth < 0) {
-                    syslog(LOG_ERR, "Failed to rewatch auth.log. Quitting.");
+                    syslog(LOG_CRIT, "Failed to rewatch auth.log. Quitting.");
                     break;
                 }
 
