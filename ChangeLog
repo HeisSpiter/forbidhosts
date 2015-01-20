@@ -1,3 +1,8 @@
+2015-01-20  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Don't use LOG_ERR for syslog, it is set to be ignored
+    * ForbidHosts.cpp: We'd rather wait when we're not using inotify
+
 2015-01-04  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: Add version number in backtrace on exception
