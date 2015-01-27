@@ -1,6 +1,7 @@
 2015-01-17  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: Add a wait loop when attempting to reopen auth.log after log rotation.
+    * ForbidHosts.cpp: Don't use deprecated function usleep().
 
 2015-01-20  Pierre Schweitzer <pierre@reactos.org>
 

@@ -698,7 +698,7 @@ int main(int argc, char ** argv) {
         }
 
 #ifdef WITHOUT_INOTIFY
-        usleep(1000);
+        sleep(1);
 #endif
     }
 
