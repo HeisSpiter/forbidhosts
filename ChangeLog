@@ -1,3 +1,7 @@
+2015-01-17  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Add a wait loop when attempting to reopen auth.log after log rotation.
+
 2015-01-20  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: Don't use LOG_ERR for syslog, it is set to be ignored

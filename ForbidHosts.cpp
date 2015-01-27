@@ -52,6 +52,7 @@
 #define MailCommandTpl "/usr/bin/mailx -s '%s - ForbidHosts Report' root"
 #define CrashMailTpl "/usr/bin/mailx -s '%s - ForbidHosts Crash' root"
 
+const unsigned int MaxWaitRotate  = 3600;
 const unsigned int MaxAttempts    = 5;
 const time_t HostExpire           = 5;
 const unsigned int FailurePenalty = 1;
@@ -649,7 +650,17 @@ int main(int argc, char ** argv) {
                 // Close file and restart
                 soft_assert(close(AuthLog) == 0);
 
-                AuthLog = open(AuthLogFile, O_RDONLY | O_NONBLOCK);
+                // We will wait a bit to allow rotation
+                for (unsigned int Attempts = 0; Attempts < MaxWaitRotate; ++Attempts) {
+                    AuthLog = open(AuthLogFile, O_RDONLY | O_NONBLOCK);
+                    if (AuthLog != -1) {
+                        break;
+                    }
+
+                    sleep(1);
+                }
+
+                // Check the wait loop was a success
                 if (AuthLog < 0) {
                     AuthLog = 0;
                     syslog(LOG_CRIT, "Failed to reopen auth.log. Quitting.");
