@@ -1,3 +1,8 @@
+2015-02-05  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: On invalid line read, don't bail out, just read the next line if available.
+    * ForbidHosts.cpp: On repeated line without previous known address, don't bail out, just read the next line if available.
+
 2015-01-17  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: Add a wait loop when attempting to reopen auth.log after log rotation.

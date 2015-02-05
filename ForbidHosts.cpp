@@ -432,11 +432,11 @@ static void ReadLine(int File, std::vector<HostIP> & Hosts) {
                 Repeated = IsLastRepeated(Line);
                 if (Repeated == 0) {
                     LastAddress = "";
-                    return;
+                    continue;
                 }
             } else {
                 LastAddress = "";
-                return;
+                continue;
             }
         } else {
             // Get the host
