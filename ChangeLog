@@ -1,3 +1,7 @@
+2015-02-16  Pierre Schweitzer <pierre@reactos.org>
+
+    * configgure.ac: Add a sum up of the build configuration at the end of configure script
+
 2015-02-05  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: On invalid line read, don't bail out, just read the next line if available.

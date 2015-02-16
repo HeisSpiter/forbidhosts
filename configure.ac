@@ -69,3 +69,12 @@ AC_TYPE_SSIZE_T
 
 AC_CONFIG_FILES([makefile])
 AC_OUTPUT
+
+echo
+echo ForbidHosts AC_PACKAGE_VERSION configured
+echo
+echo "inotify:	$enable_inotify"
+echo "email: 		$enable_email"
+echo "IPv4:		$enable_ipv4"
+echo
+echo "Environment configured. You can now run \"$ac_make\" to build ForbidHosts"
