@@ -72,8 +72,8 @@ struct HostIP {
     time_t            Expire;
     bool              Written;
 
-    HostIP(time_t Date, const std::string & AuthAddress, long unsigned int InitAttempt)
-      : Address(AuthAddress), Attempts(InitAttempt) {
+    HostIP(time_t Date, const std::string & AuthAddress, long unsigned int InitAttempt, bool AlreadyWritten)
+      : Address(AuthAddress), Attempts(InitAttempt), Written(AlreadyWritten) {
         FirstSeen = Date;
         Expire    = Date + (Attempts * FailurePenalty * HostExpire * 60);
         Written   = false;
@@ -492,7 +492,12 @@ static void ReadLine(int File, std::vector<HostIP> & Hosts) {
 
         if (UpdateHost(LastAddress, Hosts, Repeated)) {
             // Insert new host
-            Hosts.push_back(HostIP(time(0), Host, Repeated));
+            Hosts.push_back(HostIP(time(0), Host, Repeated, (Repeated >= MaxAttempts)));
+
+            // Already deny if there were too many instances in a row
+            if (Repeated >= MaxAttempts) {
+                AddToDeny(LastAddress);
+            }
         }
 
         // In any case, resort list
