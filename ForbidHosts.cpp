@@ -72,10 +72,10 @@ struct HostIP {
     time_t            Expire;
     bool              Written;
 
-    HostIP(time_t Date, const std::string & AuthAddress) : Address(AuthAddress) {
+    HostIP(time_t Date, const std::string & AuthAddress, long unsigned int InitAttempt)
+      : Address(AuthAddress), Attempts(InitAttempt) {
         FirstSeen = Date;
-        Attempts  = 1;
-        Expire    = Date + HostExpire * 60;
+        Expire    = Date + (Attempts * FailurePenalty * HostExpire * 60);
         Written   = false;
     }
 };
@@ -180,10 +180,7 @@ static void ExceptionHandler(int Signal, siginfo_t * SigInfo, void * Context) {
     free(Strings);
 }
 
-static bool IsValidLine(char * Line, char ** Address,
-                        size_t * AddressLength) {
-    char * SSHd;
-    char * Method;
+static bool ExtractData(char * Begin, char ** Address, size_t * AddressLength) {
     char * User;
     char * Host;
     char * End;
@@ -192,21 +189,8 @@ static bool IsValidLine(char * Line, char ** Address,
     char * Dot;
 #endif
 
-    // Ensure we are dealing with SSH
-    SSHd = strstr(Line, " sshd[");
-    if (SSHd == 0) {
-        return false;
-    }
-
-    // That the auth failed
-    Method = strstr(SSHd, ": Failed ");
-    if (Method == 0) {
-        return false;
-    }
-    Method += sizeof(": Failed ");
-
     // For an user
-    User = strstr(Method, " for ");
+    User = strstr(Begin, " for ");
     if (User == 0) {
         return false;
     }
@@ -249,6 +233,65 @@ static bool IsValidLine(char * Line, char ** Address,
     *AddressLength = (End - Host);
 
     return true;
+}
+
+static bool IsMessageRepeated(char * Line, char ** Address,
+                              size_t * AddressLength, long unsigned int * Attempts) {
+    char * SSHd;
+    char * Repeated;
+    char * Method;
+
+    // Ensure we are dealing with SSH
+    SSHd = strstr(Line, " sshd[");
+    if (SSHd == 0) {
+        return false;
+    }
+
+    // Was message repeated
+    Repeated = strstr(SSHd, ": message repeated ");
+    if (Repeated == 0) {
+        return false;
+    }
+
+    // Get the failed method
+    Method = strstr(Repeated, " times: [ Failed ");
+    if (Method == 0) {
+        return false;
+    }
+    Method += sizeof(" times: [ Failed ");
+
+    // Advance to the number to extract it
+    Repeated += sizeof(": message repeated ") - sizeof(char);
+    *Attempts = strtoul(Repeated, 0, 10);
+
+    // Extract all the rest
+    return ExtractData(Method, Address, AddressLength);
+}
+
+static bool IsValidLine(char * Line, char ** Address,
+                        size_t * AddressLength, long unsigned int * Attempts) {
+    char * SSHd;
+    char * Method;
+
+    // Ensure we are dealing with SSH
+    SSHd = strstr(Line, " sshd[");
+    if (SSHd == 0) {
+        return false;
+    }
+
+    // That the auth failed
+    Method = strstr(SSHd, ": Failed ");
+    if (Method == 0) {
+        // We might face message repeated - have a try
+        return IsMessageRepeated(Line, Address, AddressLength, Attempts);
+    }
+    Method += sizeof(": Failed ");
+
+    // By default, there was 1 attempt
+    *Attempts = 1;
+
+    // Extract all the rest
+    return ExtractData(Method, Address, AddressLength);
 }
 
 static long unsigned int IsLastRepeated(char * Line) {
@@ -396,12 +439,12 @@ static void ReadLine(int File, std::vector<HostIP> & Hosts) {
     char * Address;
     std::string Host;
     static std::string LastAddress = "";
-    long unsigned int Repeated = 1;
     size_t AddressLength;
     ssize_t Length;
 
     for (;;) {
         unsigned int Read = 0;
+        long unsigned int Repeated = 1;
 
         while (Read < sizeof(Line) / sizeof(char)) {
             Length = read(File, &Line[Read], sizeof(char));
@@ -427,7 +470,7 @@ static void ReadLine(int File, std::vector<HostIP> & Hosts) {
         }
 
         // Check if line is valid and if it is a repetition
-        if (!IsValidLine(Line, &Address, &AddressLength)) {
+        if (!IsValidLine(Line, &Address, &AddressLength, &Repeated)) {
             if (!LastAddress.empty()) {
                 Repeated = IsLastRepeated(Line);
                 if (Repeated == 0) {
@@ -449,7 +492,7 @@ static void ReadLine(int File, std::vector<HostIP> & Hosts) {
 
         if (UpdateHost(LastAddress, Hosts, Repeated)) {
             // Insert new host
-            Hosts.push_back(HostIP(time(0), Host));
+            Hosts.push_back(HostIP(time(0), Host, Repeated));
         }
 
         // In any case, resort list

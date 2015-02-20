@@ -1,6 +1,10 @@
+2015-02-20  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Take into account repeated lines that directly state the repeated message
+
 2015-02-16  Pierre Schweitzer <pierre@reactos.org>
 
-    * configgure.ac: Add a sum up of the build configuration at the end of configure script
+    * configure.ac: Add a sum up of the build configuration at the end of configure script
 
 2015-02-05  Pierre Schweitzer <pierre@reactos.org>
 
