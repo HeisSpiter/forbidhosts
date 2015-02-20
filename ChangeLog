@@ -1,5 +1,6 @@
 2015-02-20  Pierre Schweitzer <pierre@reactos.org>
 
+    * ForbidHosts.cpp: C++ify code
     * ForbidHosts.cpp: Already add a newly found host if its attempts beat max attempts
     * ForbidHosts.cpp: Increase the penalty taking into account the number of attempts
     * ForbidHosts.cpp: Take into account repeated lines that directly state the repeated message

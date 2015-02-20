@@ -180,7 +180,7 @@ static void ExceptionHandler(int Signal, siginfo_t * SigInfo, void * Context) {
     free(Strings);
 }
 
-static bool ExtractData(char * Begin, char ** Address, size_t * AddressLength) {
+static bool ExtractData(char * Begin, char ** Address, size_t & AddressLength) {
     char * User;
     char * Host;
     char * End;
@@ -230,13 +230,13 @@ static bool ExtractData(char * Begin, char ** Address, size_t * AddressLength) {
 
     // Return host
     *Address = Host;
-    *AddressLength = (End - Host);
+    AddressLength = (End - Host);
 
     return true;
 }
 
 static bool IsMessageRepeated(char * Line, char ** Address,
-                              size_t * AddressLength, long unsigned int * Attempts) {
+                              size_t & AddressLength, long unsigned int & Attempts) {
     char * SSHd;
     char * Repeated;
     char * Method;
@@ -262,14 +262,14 @@ static bool IsMessageRepeated(char * Line, char ** Address,
 
     // Advance to the number to extract it
     Repeated += sizeof(": message repeated ") - sizeof(char);
-    *Attempts = strtoul(Repeated, 0, 10);
+    Attempts = strtoul(Repeated, 0, 10);
 
     // Extract all the rest
     return ExtractData(Method, Address, AddressLength);
 }
 
 static bool IsValidLine(char * Line, char ** Address,
-                        size_t * AddressLength, long unsigned int * Attempts) {
+                        size_t & AddressLength, long unsigned int & Attempts) {
     char * SSHd;
     char * Method;
 
@@ -288,7 +288,7 @@ static bool IsValidLine(char * Line, char ** Address,
     Method += sizeof(": Failed ");
 
     // By default, there was 1 attempt
-    *Attempts = 1;
+    Attempts = 1;
 
     // Extract all the rest
     return ExtractData(Method, Address, AddressLength);
@@ -470,7 +470,7 @@ static void ReadLine(int File, std::vector<HostIP> & Hosts) {
         }
 
         // Check if line is valid and if it is a repetition
-        if (!IsValidLine(Line, &Address, &AddressLength, &Repeated)) {
+        if (!IsValidLine(Line, &Address, AddressLength, Repeated)) {
             if (!LastAddress.empty()) {
                 Repeated = IsLastRepeated(Line);
                 if (Repeated == 0) {
