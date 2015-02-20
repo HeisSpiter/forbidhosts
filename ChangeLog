@@ -1,5 +1,6 @@
 2015-02-20  Pierre Schweitzer <pierre@reactos.org>
 
+    * ForbidHosts.cpp: Increase the penalty taking into account the number of attempts
     * ForbidHosts.cpp: Take into account repeated lines that directly state the repeated message
 
 2015-02-16  Pierre Schweitzer <pierre@reactos.org>

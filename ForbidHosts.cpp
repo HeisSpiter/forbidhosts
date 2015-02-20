@@ -422,7 +422,7 @@ static bool UpdateHost(const std::string & Host,
                 (*it).Written = true;
             } else {
                 // Update expire
-                (*it).Expire += (FailurePenalty * 60);
+                (*it).Expire += (Repeated * FailurePenalty * 60);
             }
 
             break;
