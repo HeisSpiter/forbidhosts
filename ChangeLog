@@ -1,3 +1,7 @@
+2015-02-21  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Fix a cppcheck warning
+
 2015-02-20  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: C++ify code

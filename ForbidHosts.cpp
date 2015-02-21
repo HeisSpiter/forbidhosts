@@ -89,7 +89,7 @@ struct Closer {
 static void Assert(const char * File, unsigned int Line, const char * Assert,
                    bool Critical = false) {
     syslog((Critical ? LOG_CRIT : LOG_NOTICE),
-           "Assertion '%s' failed at line %d in file %s", Assert, Line, File);
+           "Assertion '%s' failed at line %u in file %s", Assert, Line, File);
 
     if (Critical) {
         syslog(LOG_INFO, "Deamon shutting down.");
