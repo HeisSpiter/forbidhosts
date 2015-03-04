@@ -71,8 +71,7 @@ struct HostIP {
     bool              Written;
 
     HostIP(time_t Date, const std::string & AuthAddress, long unsigned int InitAttempt, bool AlreadyWritten)
-      : Address(AuthAddress), Attempts(InitAttempt), Written(AlreadyWritten) {
-        FirstSeen = Date;
+      : FirstSeen(Date), Address(AuthAddress), Attempts(InitAttempt), Written(AlreadyWritten) {
         Expire    = Date + (Attempts * FailurePenalty * HostExpire * 60);
         Written   = false;
     }
