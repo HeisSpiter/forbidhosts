@@ -1,5 +1,7 @@
 2015-03-04  Pierre Schweitzer <pierre@reactos.org>
 
+    * ForbidHosts.cpp: Also make constants static
+    * ForbidHosts.cpp: Remove unused constants
     * ForbidHosts.cpp: Make const char pointers const
     * ForbidHosts.cpp: Make constants notation consistent
 

@@ -52,16 +52,14 @@
 #define MailCommandTpl "/usr/bin/mailx -s '%s - ForbidHosts Report' root"
 #define CrashMailTpl "/usr/bin/mailx -s '%s - ForbidHosts Crash' root"
 
-unsigned int const MaxWaitRotate  = 3600;
-unsigned int const MaxAttempts    = 5;
-time_t const HostExpire           = 5;
-unsigned int const FailurePenalty = 1;
-unsigned int const BackTraceSize  = 100;
-char const * const AuthLogDir     = "/var/log/";
-char const * const AuthLogFile    = "/var/log/auth.log";
-char const * const AuthFileName   = AuthLogFile + sizeof(AuthLogDir) / sizeof(AuthLogDir[0]) - 1;
-char MailCommand[HOST_NAME_MAX + sizeof(MailCommandTpl) / sizeof(MailCommandTpl[0])];
-char CrashMail[HOST_NAME_MAX + sizeof(CrashMailTpl) / sizeof(CrashMailTpl[0])];
+static unsigned int const MaxWaitRotate  = 3600;
+static unsigned int const MaxAttempts    = 5;
+static time_t const HostExpire           = 5;
+static unsigned int const FailurePenalty = 1;
+static unsigned int const BackTraceSize  = 100;
+static char const * const AuthLogFile    = "/var/log/auth.log";
+static char MailCommand[HOST_NAME_MAX + sizeof(MailCommandTpl) / sizeof(MailCommandTpl[0])];
+static char CrashMail[HOST_NAME_MAX + sizeof(CrashMailTpl) / sizeof(CrashMailTpl[0])];
 
 bool AlreadyCrashed = false;
 
