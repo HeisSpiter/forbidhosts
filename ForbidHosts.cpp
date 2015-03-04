@@ -61,7 +61,7 @@ static char const * const AuthLogFile    = "/var/log/auth.log";
 static char MailCommand[HOST_NAME_MAX + sizeof(MailCommandTpl) / sizeof(MailCommandTpl[0])];
 static char CrashMail[HOST_NAME_MAX + sizeof(CrashMailTpl) / sizeof(CrashMailTpl[0])];
 
-bool AlreadyCrashed = false;
+static volatile std::sig_atomic_t AlreadyCrashed = 0;
 
 struct HostIP {
     time_t            FirstSeen;
@@ -113,10 +113,10 @@ static void ExceptionHandler(int Signal, siginfo_t * SigInfo, void * Context) {
     // The whole point of this is to prevent infinite loop in case
     // of a crash in the exception handler
     // Even though, this might be questioned because we're manually reset
-    if (AlreadyCrashed == true) {
+    if (AlreadyCrashed == 1) {
         return;
     } else {
-        AlreadyCrashed = true;
+        AlreadyCrashed = 1;
     }
 
     // Immediately print to log, in case something would go wrong afterwards

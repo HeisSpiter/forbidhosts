@@ -1,5 +1,6 @@
 2015-03-04  Pierre Schweitzer <pierre@reactos.org>
 
+    * ForbidHosts.cpp: Prevent race condition in the signal handler
     * ForbidHosts.cpp: Also make constants static
     * ForbidHosts.cpp: Remove unused constants
     * ForbidHosts.cpp: Make const char pointers const
