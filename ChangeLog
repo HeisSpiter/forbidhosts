@@ -1,3 +1,7 @@
+2015-03-05  Pierre Schweitzer <pierre@reactos.org>
+
+    * ForbidHosts.cpp: Move deny file path to a constant string
+
 2015-03-04  Pierre Schweitzer <pierre@reactos.org>
 
     * ForbidHosts.cpp: Use default assignement for FirstSeen

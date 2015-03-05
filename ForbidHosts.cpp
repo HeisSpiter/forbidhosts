@@ -58,6 +58,7 @@ static time_t const HostExpire           = 5;
 static unsigned int const FailurePenalty = 1;
 static unsigned int const BackTraceSize  = 100;
 static char const * const AuthLogFile    = "/var/log/auth.log";
+static char const * const DenyFile       = "/etc/hosts.deny";
 static char MailCommand[HOST_NAME_MAX + sizeof(MailCommandTpl) / sizeof(MailCommandTpl[0])];
 static char CrashMail[HOST_NAME_MAX + sizeof(CrashMailTpl) / sizeof(CrashMailTpl[0])];
 
@@ -329,7 +330,7 @@ static void AddToDeny(const std::string & Host) {
     }
 
     // Now, open hosts.deny
-    int Deny = open("/etc/hosts.deny", O_WRONLY | O_APPEND);
+    int Deny = open(DenyFile, O_WRONLY | O_APPEND);
     if (Deny < 0) {
         exit(EXIT_FAILURE);
     }
