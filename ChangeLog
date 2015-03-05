@@ -1,5 +1,7 @@
 2015-03-05  Pierre Schweitzer <pierre@reactos.org>
 
+    * ForbidHosts.cpp: Make use of user provided paths for files
+    * configure.ac: Allow to define auth.log and hosts.deny path by env var
     * configure.ac: Simplify file
     * ForbidHosts.cpp: Move deny file path to a constant string
 

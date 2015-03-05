@@ -57,8 +57,8 @@ static unsigned int const MaxAttempts    = 5;
 static time_t const HostExpire           = 5;
 static unsigned int const FailurePenalty = 1;
 static unsigned int const BackTraceSize  = 100;
-static char const * const AuthLogFile    = "/var/log/auth.log";
-static char const * const DenyFile       = "/etc/hosts.deny";
+static char const * const AuthLogFile    = AUTHLOG_FILE;
+static char const * const DenyFile       = DENY_FILE;
 static char MailCommand[HOST_NAME_MAX + sizeof(MailCommandTpl) / sizeof(MailCommandTpl[0])];
 static char CrashMail[HOST_NAME_MAX + sizeof(CrashMailTpl) / sizeof(CrashMailTpl[0])];
 
