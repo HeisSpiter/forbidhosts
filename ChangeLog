@@ -1,5 +1,6 @@
 2015-03-05  Pierre Schweitzer <pierre@reactos.org>
 
+    * configure.ac: Simplify file
     * ForbidHosts.cpp: Move deny file path to a constant string
 
 2015-03-04  Pierre Schweitzer <pierre@reactos.org>

@@ -36,22 +36,14 @@ fi
 AM_CONDITIONAL(WITHOUT_INOTIFY, test $enable_inotify != "yes")
 
 AC_ARG_ENABLE(email, [  --disable-email  Disable email sending.], [],[enableval=yes])
-if test "z$enableval" = zno ; then
-    enable_email="no"
-else
-    enable_email="yes"
-fi
+AS_IF([test "z$enableval" = zno], [enable_email="no"], [enable_email="yes"])
 if test $enable_email = "no" ; then
     AC_DEFINE([WITHOUT_EMAIL], 1, [Define if you want to disable the email sending])
 fi
 AM_CONDITIONAL(WITHOUT_EMAIL, test $enable_email != "yes")
 
 AC_ARG_ENABLE(ipv4, [  --enable-ipv4  Enable the IPv4 support.], [],[enableval=no])
-if test "z$enableval" = zyes ; then
-    enable_ipv4="yes"
-else
-    enable_ipv4="no"
-fi
+AS_IF([test "z$enableval" = zyes], [enable_ipv4="yes"], [enable_ipv4="no"])
 if test $enable_ipv4 = "yes" ; then
     AC_DEFINE([WITH_IPV4], 1, [Define if you want to enable the IPv4 support])
 fi
