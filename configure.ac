@@ -63,14 +63,12 @@ AC_TYPE_SSIZE_T
 AC_ARG_VAR([AUTHLOG_FILE], [Path where to find auth.log file.
                             Default = "/var/log/auth.log"])
 AS_IF([test "z$AUTHLOG_FILE" = z], [AUTHLOG_FILE="/var/log/auth.log"])
-AC_DEFINE([AUTHLOG_FILE], [], [Define to the path of the auth.log file])
-AC_DEFINE_UNQUOTED([AUTHLOG_FILE], "$AUTHLOG_FILE")
+AC_DEFINE_UNQUOTED([AUTHLOG_FILE], ["$AUTHLOG_FILE"], [Define to the path of the auth.log file])
 
 AC_ARG_VAR([DENY_FILE], [Path where to find hosts.deny file.
                          Default = "/etc/hosts.deny"])
 AS_IF([test "z$DENY_FILE" = z], [DENY_FILE="/etc/hosts.deny"])
-AC_DEFINE([DENY_FILE], [], [Define to the path of the hosts.deny file])
-AC_DEFINE_UNQUOTED([DENY_FILE], "$DENY_FILE")
+AC_DEFINE_UNQUOTED([DENY_FILE], ["$DENY_FILE"], [Define to the path of the hosts.deny file])
 
 AC_CONFIG_FILES([makefile])
 AC_OUTPUT
