@@ -79,5 +79,7 @@ echo
 echo "inotify:	$enable_inotify"
 echo "email: 		$enable_email"
 echo "IPv4:		$enable_ipv4"
+echo "log file:	$AUTHLOG_FILE"
+echo "deny file:	$DENY_FILE"
 echo
 echo "Environment configured. You can now run \"$ac_make\" to build ForbidHosts"

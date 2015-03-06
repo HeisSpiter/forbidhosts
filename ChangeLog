@@ -1,3 +1,7 @@
+2015-03-06  Pierre Schweitzer <pierre@reactos.org>
+
+    * configure.ac: Display files paths at the end of configure
+
 2015-03-05  Pierre Schweitzer <pierre@reactos.org>
 
     * configure.ac: Simplify file
